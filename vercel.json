@@ -1,0 +1,7 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/session_creation_wireframe", "destination": "/index.html" },
+    { "source": "/session_creation_wireframe.html", "destination": "/index.html" }
+  ]
+}
