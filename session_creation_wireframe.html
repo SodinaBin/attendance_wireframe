@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Session Creation Wireframe</title>
+<style>
+  :root{
+    --bg:#e9e9e9; --panel:#fff; --line:#9a9a9a; --text:#333; --muted:#8a8a8a;
+    --accent:#555;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#d8d8d8;font-family:'Helvetica Neue',Arial,sans-serif;color:var(--text);
+    display:flex;align-items:flex-start;justify-content:center;min-height:100%;padding:24px 10px;}
+  .phone{width:360px;max-width:100%;background:var(--panel);border:2px solid #444;border-radius:28px;
+    box-shadow:0 6px 18px rgba(0,0,0,.2);overflow:hidden;position:relative;min-height:640px;}
+  .statusbar{height:22px;background:#444;}
+  .topbar{position:relative;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;min-height:44px;border-bottom:1px dashed var(--line);}
+  .topbar .back{font-size:13px;color:var(--muted);cursor:pointer;z-index:2;user-select:none;display:flex;align-items:center;}
+  .topbar .back:hover{color:var(--text);}
+  .topbar .title{position:absolute;left:50%;transform:translateX(-50%);font-size:14px;font-weight:bold;text-align:center;white-space:nowrap;max-width:55%;overflow:hidden;text-overflow:ellipsis;pointer-events:none;}
+  .step{font-size:11px;color:var(--muted);z-index:2;user-select:none;}
+  .screen{display:none;padding:16px 16px 75px;min-height:460px;}
+  .screen.active{display:block;}
+  .field-label{font-size:11px;color:var(--muted);margin:14px 0 4px;text-transform:uppercase;letter-spacing:.03em;}
+  .box{border:1.5px dashed var(--line);border-radius:6px;padding:10px;font-size:13px;color:var(--text);background:#fafafa;}
+  input.box{width:100%;font-family:inherit;outline:none;}
+  input.box::placeholder{color:var(--muted);}
+  .option{border:1.5px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;font-size:13px;
+    display:flex;align-items:center;gap:10px;cursor:pointer;}
+  .option.selected{border-color:#333;background:#f0f0f0;font-weight:bold;}
+  .radio{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--line);flex-shrink:0;}
+  .option.selected .radio{background:#333;}
+  .note{font-size:11px;color:var(--muted);border-left:2px solid var(--line);padding:6px 8px;margin-top:8px;background:#f5f5f5;}
+  .toggle-row{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);
+    border-radius:6px;padding:8px 10px;margin-bottom:8px;font-size:13px;cursor:pointer;user-select:none;}
+  .toggle-row:hover{background:#fafafa;}
+  .switch{width:34px;height:18px;border:1.5px solid var(--line);border-radius:10px;position:relative;flex-shrink:0;}
+  .switch .knob{width:14px;height:14px;background:var(--line);border-radius:50%;position:absolute;top:1px;left:1px;}
+  .switch.on{border-color:#333;}
+  .switch.on .knob{background:#333;left:auto;right:1px;}
+  .segmented{display:flex;border:1.5px solid var(--line);border-radius:22px;background:#fafafa;padding:3px;margin-bottom:8px;gap:4px;user-select:none;}
+  .seg-btn{flex:1;text-align:center;padding:7px 10px;font-size:12.5px;border-radius:18px;cursor:pointer;color:var(--muted);border:1px solid transparent;}
+  .seg-btn.selected{background:#333;color:#fff;font-weight:bold;}
+  .btn-primary{width:100%;padding:12px;background:#333;color:#fff;border:none;border-radius:8px;font-size:14px;
+    font-weight:bold;margin-top:18px;cursor:pointer;}
+  .btn-secondary{width:100%;padding:10px;background:#fff;color:#333;border:1.5px dashed var(--line);border-radius:8px;
+    font-size:13px;margin-top:8px;cursor:pointer;text-align:center;}
+  .btn-secondary.added{background:#f0f0f0;border-style:solid;border-color:#333;font-weight:bold;}
+  .dots{display:flex;justify-content:center;gap:6px;padding:12px 0 18px;}
+  .dot{width:6px;height:6px;border-radius:50%;background:#ccc;}
+  .dot.active{background:#333;}
+  .summary-row{display:flex;justify-content:space-between;font-size:12.5px;padding:7px 0;border-bottom:1px dashed #ddd;}
+  .summary-row span:first-child{color:var(--muted);}
+  h2{font-size:16px;margin:4px 0 2px;}
+  p.sub{font-size:12px;color:var(--muted);margin:0 0 10px;}
+
+  /* Flow Switcher & Tabs */
+  .flow-switcher{display:flex;background:#eee;border-bottom:1.5px solid var(--line);user-select:none;}
+  .flow-tab{flex:1;padding:10px 2px;text-align:center;font-size:11.5px;font-weight:bold;color:var(--muted);background:transparent;border:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .flow-tab.active{color:#222;background:#fff;border-bottom:2px solid #333;}
+  .session-card{border:1.5px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:#fafafa;cursor:pointer;user-select:none;}
+  .session-card:hover{background:#f2f2f2;border-color:#555;}
+  .badge{display:inline-block;font-size:10px;font-weight:bold;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.03em;}
+  .badge-owner{background:#333;color:#fff;}
+  .badge-manager{background:#e8e8e8;color:#444;border:1px solid #aaa;}
+  .badge-approved{background:#e0e0e0;color:#222;border:1px solid #888;font-size:10px;padding:2px 6px;border-radius:4px;}
+  .badge-pending{background:#fff;color:#444;border:1px dashed #777;font-size:10px;padding:2px 6px;border-radius:4px;cursor:pointer;}
+  .badge-pending:hover{background:#eee;}
+  .badge-status-in{background:#fafafa;color:#222;border:1px solid #777;}
+  .badge-status-out{background:#333;color:#fff;}
+  .badge-status-late{background:#fff;color:#222;border:1.5px dashed #444;font-weight:bold;}
+  .subtabs{display:flex;border-bottom:1.5px solid var(--line);background:#fafafa;}
+  .subtab-btn{flex:1;text-align:center;padding:10px 2px;font-size:11.5px;font-weight:bold;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;user-select:none;}
+  .subtab-btn.active{color:#222;background:#fff;border-bottom-color:#333;}
+  .detail-pane{display:none;padding:14px 16px 20px;}
+  .detail-pane.active{display:block;}
+  .record-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #ddd;font-size:12px;}
+  .roster-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dashed #ddd;font-size:12px;}
+  .chip{padding:4px 10px;border-radius:14px;border:1px solid var(--line);background:#fff;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;user-select:none;transition:all 0.15s;}
+  .chip:hover{border-color:#555;color:var(--text);}
+  .chip.active{background:#333;color:#fff;border-color:#333;}
+
+  /* Persistent Scan FAB - Circular & Centered (Icon Only) */
+  .scan-fab{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:54px;height:54px;border-radius:50%;z-index:90;display:flex;align-items:center;justify-content:center;background:#222;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,0.3);cursor:pointer;border:2px solid #555;user-select:none;transition:transform 0.1s, background 0.15s;}
+  .scan-fab:active{transform:translateX(-50%) scale(0.94);background:#000;}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar"></div>
+
+  <!-- Top-level Flow Switcher -->
+  <div class="flow-switcher">
+    <button class="flow-tab active" id="tabMyAttendance" onclick="switchMainFlow('my-attendance')">My Attendance</button>
+    <button class="flow-tab" id="tabMySessions" onclick="switchMainFlow('my-sessions')">My Session</button>
+    <button class="flow-tab" id="tabCreateSession" onclick="switchMainFlow('create-session')">Create Session</button>
+  </div>
+
+  <!-- FLOW 1: My Attendance (List + Read-only Detail) -->
+  <div id="flowMyAttendance">
+    <!-- View A: Attendance Records List -->
+    <div id="myAttendanceListView">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px 8px;">
+        <div>
+          <h2 style="margin:0; font-size:16px;">My Attendance</h2>
+          <p class="sub" style="margin:2px 0 0; font-size:11.5px;">Your personal check-in history</p>
+        </div>
+        <select id="attendanceStatusFilter" class="box" style="width:auto; padding:5px 8px; font-size:11px; border-radius:14px; background:#fff; cursor:pointer; font-weight:bold; outline:none;" onchange="setAttendanceFilter(this.value)">
+          <option value="all">Filter: All</option>
+          <option value="ongoing">Ongoing</option>
+          <option value="past">Past</option>
+          <option value="late">Late</option>
+        </select>
+      </div>
+
+      <div style="padding: 4px 16px 75px;" id="attendanceListContainer">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </div>
+
+    <!-- View B: Attendance Record Detail (Read-Only) -->
+    <div id="myAttendanceDetailView" style="display:none;">
+      <div class="topbar">
+        <span class="back" onclick="closeAttendanceDetail()">‹ All Attendance</span>
+        <span class="title">Attendance Record</span>
+        <span class="step" id="attendDetailNavStatus">Checked Out</span>
+      </div>
+
+      <!-- Big Cover Banner Image (like Facebook Background Cover) -->
+      <div id="attendDetailCoverContainer" style="width:100%; height:130px; position:relative; overflow:hidden; background:#e8e8e8; border-bottom:1px solid var(--line);">
+        <!-- Populated dynamically: <img> or default cover SVG -->
+      </div>
+
+      <!-- Detail Header Card -->
+      <div style="padding:12px 16px; border-bottom:1px dashed var(--line); background:#fafafa;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div style="flex:1; padding-right:8px;">
+            <div id="attendDetailName" style="font-size:15px; font-weight:bold; color:var(--text);">Session Name</div>
+            <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+              <div id="attendDetailImageContainer" style="flex-shrink:0;"></div>
+              <div id="attendDetailSub" style="font-size:11.5px; color:var(--muted); line-height:1.4;">Workplace Attendance · Date</div>
+            </div>
+          </div>
+          <span id="attendDetailBadge" class="badge">Status</span>
+        </div>
+      </div>
+
+      <div style="padding:14px 16px 75px;">
+        <div class="field-label" style="margin-top:4px;">Session Schedule & Times</div>
+        <div class="box" style="margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed #e0e0e0;">
+            <span style="color:var(--muted);">Scheduled Time</span>
+            <strong id="attendDetailSessionTime">08:00 – 17:00</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed #e0e0e0;">
+            <span style="color:var(--muted);">Check-in Time</span>
+            <strong id="attendDetailCheckIn">08:24 AM</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:4px 0;" id="attendCheckOutRow">
+            <span style="color:var(--muted);">Check-out Time</span>
+            <strong id="attendDetailCheckOut">17:02 PM</strong>
+          </div>
+        </div>
+
+        <!-- Conditional Late Reason Block (shown only when status === 'Late') -->
+        <div id="attendLateSection" style="display:none; margin-bottom:12px;">
+          <div class="field-label">Late Arrival Notice</div>
+          <div class="box" style="border-style:solid; border-color:#888;">
+            <div style="font-size:11px; color:var(--muted); margin-bottom:2px;">Late Reason Reported</div>
+            <div id="attendLateReason" style="font-weight:bold; margin-bottom:6px;">Heavy traffic on Monivong Blvd</div>
+            <div id="attendScheduledTime" style="font-size:10.5px; color:var(--muted);">Scheduled start: 08:00 AM · Grace ended 08:10 AM</div>
+          </div>
+        </div>
+
+        <!-- Attendees / Coworkers in this Session -->
+        <div class="field-label" id="attendDetailPeersLabel">Attendees & Coworkers</div>
+        <div class="box" style="margin-bottom:14px; padding:4px 10px;" id="attendDetailPeersList">
+          <!-- Populated dynamically by JS -->
+        </div>
+
+        <div class="note">
+          Participant Attendance Slip · Verified via Khemra Nexus Core. This record is read-only. For amendments, contact your session manager or administrator.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOW 2: My Sessions (List + Detail) -->
+  <div id="flowMySessions" style="display:none;">
+    <!-- View A: Sessions List -->
+    <div id="mySessionListView">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px 8px;">
+        <div>
+          <h2 style="margin:0; font-size:16px;">My Sessions</h2>
+          <p class="sub" style="margin:2px 0 0; font-size:11.5px;">All sessions you own or manage</p>
+        </div>
+        <select id="sessionStatusFilter" class="box" style="width:auto; padding:5px 8px; font-size:11px; border-radius:14px; background:#fff; cursor:pointer; font-weight:bold; outline:none;" onchange="setSessionFilter(this.value)">
+          <option value="all">Filter: All</option>
+          <option value="ongoing">Ongoing</option>
+          <option value="past">Past</option>
+        </select>
+      </div>
+
+      <div style="padding: 4px 16px 75px;" id="sessionsListContainer">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </div>
+
+    <!-- View B: Session Detail Screen -->
+    <div id="mySessionDetailView" style="display:none;">
+      <div class="topbar">
+        <span class="back" onclick="closeSessionDetail()">‹ All Sessions</span>
+        <span class="title">Session Details</span>
+        <span class="step" id="detailNavRole">Owner</span>
+      </div>
+
+      <!-- Big Cover Banner Image (like Facebook Background Cover) -->
+      <div id="detailCoverContainer" style="width:100%; height:130px; position:relative; overflow:hidden; background:#e8e8e8; border-bottom:1px solid var(--line);">
+        <!-- Populated dynamically: <img> or default cover SVG -->
+      </div>
+
+      <!-- Detail Header Card -->
+      <div style="padding:12px 16px; border-bottom:1px dashed var(--line); background:#fafafa;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div style="flex:1; padding-right:8px;">
+            <div id="detailName" style="font-size:15px; font-weight:bold; color:var(--text);">Downtown Job Fair</div>
+            <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+              <div id="detailImageContainer" style="flex-shrink:0;"></div>
+              <div id="detailSubInfo" style="font-size:11.5px; color:var(--muted); line-height:1.4;">Events · Group · Ongoing</div>
+            </div>
+          </div>
+          <span id="detailBadge" class="badge badge-owner">Owner</span>
+        </div>
+      </div>
+
+      <!-- Detail Sub-tabs: QR Code | Roster | Records | Settings -->
+      <div class="subtabs">
+        <div class="subtab-btn active" data-tab="qr" onclick="switchDetailSubtab('qr')">QR Code</div>
+        <div class="subtab-btn" data-tab="roster" onclick="switchDetailSubtab('roster')">Roster</div>
+        <div class="subtab-btn" data-tab="records" onclick="switchDetailSubtab('records')">Records</div>
+        <div class="subtab-btn" data-tab="settings" onclick="switchDetailSubtab('settings')">Settings</div>
+      </div>
+
+      <!-- Subtab Pane 1: QR Code -->
+      <div class="detail-pane active" id="paneDetailQr">
+        <div style="display:flex; flex-direction:column; align-items:center; padding:12px 0;">
+          <div style="width:160px; height:160px; border:2px dashed var(--line); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#fafafa; text-align:center; padding:12px; margin-bottom:12px;">
+            <div style="font-size:38px; line-height:1; color:#333; margin-bottom:6px;">▣</div>
+            <div style="font-size:12px; font-weight:bold;" id="qrCardTitle">Dynamic QR Code</div>
+            <div style="font-size:10px; color:var(--muted); margin-top:3px;" id="qrCardSub">Refreshes every 30s</div>
+          </div>
+
+          <!-- Dynamic QR Controls -->
+          <div id="qrDynamicBlock" style="width:100%; text-align:center;">
+            <button class="btn-secondary" id="btnRegenerateQr" style="width:100%;" onclick="regenerateQr()">↻ Regenerate QR Code</button>
+            <p class="sub" id="qrRegenStatus" style="margin-top:8px; font-size:11px;">Single-use rotating token prevents screenshot sharing.</p>
+          </div>
+
+          <!-- Static QR Controls -->
+          <div id="qrStaticBlock" style="width:100%; text-align:center; display:none;">
+            <p class="sub" style="font-size:11.5px; margin-bottom:8px;">Fixed QR code for flyers, badges, or projector display.</p>
+            <button class="btn-secondary" style="width:100%;" onclick="alert('Static QR downloaded / print ready.')">⬇ Download / Print QR</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtab Pane 2: Roster -->
+      <div class="detail-pane" id="paneDetailRoster">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div>
+            <h2 style="margin:0; font-size:14px;" id="rosterPaneHeading">Attendee List</h2>
+            <p class="sub" style="margin:0; font-size:11px;" id="rosterPaneSub">Current roster and status</p>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button class="btn-secondary" id="btnRosterSelectMode" style="margin:0; width:auto; padding:5px 10px; font-size:11px;" onclick="toggleRosterSelectMode()">Select</button>
+            <button class="btn-secondary" style="margin:0; width:auto; padding:5px 10px; font-size:11px;" onclick="alert('Upload / Add Member placeholder')">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Filter Chips: All | Pending | Approved -->
+        <div class="roster-filter-chips" style="display:flex; gap:6px; margin:2px 0 10px;">
+          <button class="chip active" id="rosterChipAll" onclick="setRosterFilter('All')">All</button>
+          <button class="chip" id="rosterChipPending" onclick="setRosterFilter('Pending')">Pending</button>
+          <button class="chip" id="rosterChipApproved" onclick="setRosterFilter('Approved')">Approved</button>
+        </div>
+
+        <!-- Select All Container (Visible only in Selection Mode) -->
+        <div id="rosterSelectAllContainer" style="display:none; align-items:center; justify-content:space-between; padding:6px 6px 8px; border-bottom:1px dashed var(--line); margin-bottom:6px; font-size:11.5px; font-weight:bold; color:var(--text); background:#f7f7f7; border-radius:4px;">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none;">
+            <input type="checkbox" id="rosterSelectAllCheckbox" onchange="toggleRosterSelectAll(this.checked)" style="cursor:pointer; width:15px; height:15px;">
+            <span>Select All (<span id="rosterVisibleCount">0</span>)</span>
+          </label>
+          <span id="rosterSelectedCountText" style="font-size:10.5px; font-weight:normal; color:var(--muted);">0 selected</span>
+        </div>
+
+        <div id="rosterListContainer">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Subtab Pane 3: Records -->
+      <div class="detail-pane" id="paneDetailRecords">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div>
+            <h2 style="margin:0; font-size:14px;">Attendance Log</h2>
+            <p class="sub" style="margin:0; font-size:11px;" id="recordsCountSub">Today's scan activity</p>
+          </div>
+          <button class="btn-secondary" style="margin:0; width:auto; padding:5px 10px; font-size:11px;" onclick="alert('Exporting records to CSV...')">⬇ Export CSV</button>
+        </div>
+        <div id="recordsListContainer">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Subtab Pane 4: Settings -->
+      <div class="detail-pane" id="paneDetailSettings">
+        <div class="field-label">Session Name</div>
+        <input type="text" id="settingDetailName" class="box" value="">
+
+        <!-- Conditional High-risk Settings (Class Attendance / Workplace Attendance) -->
+        <div id="settingDetailHighRiskGroup">
+          <div class="field-label">Security & Restrictions</div>
+          <div class="toggle-row" onclick="toggleDetailSetting('deviceLock')">
+            <span>Device Lock</span>
+            <div class="switch on" id="swDetailDeviceLock"><div class="knob"></div></div>
+          </div>
+
+          <div class="toggle-row" onclick="toggleDetailSetting('geofence')">
+            <span>Geofence</span>
+            <div class="switch on" id="swDetailGeofence"><div class="knob"></div></div>
+          </div>
+
+          <div class="field-label">Radius (meters)</div>
+          <input type="text" id="settingDetailRadius" class="box" value="150">
+
+          <div class="field-label">QR Mode</div>
+          <div class="toggle-row" onclick="setDetailQrMode('Dynamic')">
+            <span>Dynamic (recommended)</span><span id="qrDetailDynamic">●</span>
+          </div>
+          <div class="toggle-row" onclick="setDetailQrMode('Static')">
+            <span>Static</span><span id="qrDetailStatic">○</span>
+          </div>
+
+          <div class="field-label">Working Hours</div>
+          <input type="text" id="settingDetailWorkingHours" class="box" value="08:00 – 17:00">
+
+          <div class="field-label">Late Grace Interval</div>
+          <input type="text" id="settingDetailGraceInterval" class="box" value="10 minutes">
+
+          <div class="toggle-row" onclick="toggleDetailSetting('checkoutRequired')">
+            <span>Check-out Required</span>
+            <div class="switch on" id="swDetailCheckout"><div class="knob"></div></div>
+          </div>
+        </div>
+
+        <div class="field-label">Integrations</div>
+        <div class="toggle-row" onclick="toggleDetailSetting('telegram')">
+          <span>Connect Telegram Account</span>
+          <div class="switch" id="swDetailTelegram"><div class="knob"></div></div>
+        </div>
+
+        <button class="btn-primary" style="margin-top:14px;" onclick="saveDetailSettings()">Save Changes</button>
+
+        <!-- Owner-only Actions -->
+        <div id="ownerActionsSection" style="margin-top:20px; border-top:1px dashed var(--line); padding-top:14px;">
+          <div class="field-label" style="margin-top:0; color:var(--text); font-weight:bold;">Owner Controls</div>
+          <button class="btn-secondary" onclick="alert('Transfer Ownership modal placeholder')">⇄ Transfer Ownership</button>
+          <button class="btn-secondary" style="color:#666; border-color:#888; margin-top:8px;" onclick="deleteCurrentDetailSession()">✕ Delete Session</button>
+        </div>
+
+        <!-- Manager Disclaimer Note -->
+        <div id="managerDisclaimerNote" class="note" style="display:none; margin-top:16px;">
+          You are a <strong>Manager</strong> on this session. Owner-only actions (Delete Session, Transfer Ownership) are restricted.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOW 2: Create Session Flow (Existing Screens 1 to 5) -->
+  <div id="flowCreateSession" style="display:none;">
+    <div class="topbar">
+      <span class="back" id="createSessionBackBtn" onclick="prevScreen()">‹ Back</span>
+      <span class="title">New Session</span>
+      <span class="step" id="stepLabel">1 / 5</span>
+    </div>
+
+    <!-- Screen 1: Choose Type -->
+    <div class="screen active" data-screen="1">
+      <h2>What kind of session is this?</h2>
+      <p class="sub">This decides which fields and restrictions we'll set up next.</p>
+      <div class="option selected" data-type="events" onclick="selectType(this,'events')">
+        <div class="radio"></div> Events <span style="margin-left:auto;font-weight:normal;color:var(--muted)">low restriction</span>
+      </div>
+      <div class="option" data-type="others" onclick="selectType(this,'others')">
+        <div class="radio"></div> Others <span style="margin-left:auto;font-weight:normal;color:var(--muted)">general purpose</span>
+      </div>
+      <div class="option" data-type="class" onclick="selectType(this,'class')">
+        <div class="radio"></div> Class Attendance <span style="margin-left:auto;font-weight:normal;color:var(--muted)">attendance-critical</span>
+      </div>
+      <div class="option" data-type="workplace" onclick="selectType(this,'workplace')">
+        <div class="radio"></div> Workplace Attendance <span style="margin-left:auto;font-weight:normal;color:var(--muted)">attendance-critical</span>
+      </div>
+      <div class="note" id="typeNote" style="display:none;">This type turns on device lock, geofencing, and check-out by default.</div>
+      <button class="btn-primary" onclick="nextScreen()">Continue</button>
+    </div>
+
+    <!-- Screen 2: Common Fields -->
+    <div class="screen" data-screen="2">
+      <h2>Session details</h2>
+      <p class="sub">Same for every session type.</p>
+      <div class="field-label">Session Name</div>
+      <input type="text" id="sessionNameInput" class="box" value="Downtown Job Fair" placeholder="e.g. Downtown Job Fair" oninput="setSessionName(this.value)">
+
+      <div class="field-label">Managed by</div>
+      <div class="segmented" id="scopeSegmented">
+        <div class="seg-btn" id="segScopePersonal" onclick="setScope('Personal')">Personal</div>
+        <div class="seg-btn selected" id="segScopeGroup" onclick="setScope('Group')">Group</div>
+      </div>
+
+      <div class="field-label">Start Date / Time</div>
+      <input type="text" id="startDateInput" class="box" value="Today, 09:00 AM" placeholder="Tap to select" oninput="setStartDate(this.value)">
+
+      <div class="field-label">Session Lifetime</div>
+      <div class="segmented" id="lifetimeSegmented">
+        <div class="seg-btn" id="segLifeFixed" onclick="setLifetime('Fixed Duration')">Fixed Duration</div>
+        <div class="seg-btn selected" id="segLifeOngoing" onclick="setLifetime('Ongoing')">Ongoing</div>
+      </div>
+
+      <div id="endDateContainer" style="display:none;">
+        <div class="field-label">End Date / Time</div>
+        <input type="text" id="endDateInput" class="box" value="Today, 18:00 PM" placeholder="Tap to select" oninput="setEndDate(this.value)">
+      </div>
+
+      <button class="btn-primary" onclick="nextScreen()">Continue</button>
+    </div>
+
+    <!-- Screen 3: Configuration (Class Attendance / Workplace Attendance only) -->
+    <div class="screen" data-screen="3">
+      <h2>Configuration</h2>
+      <p class="sub" id="configSub">Device lock, geofence and dynamic QR are pre-enabled.</p>
+
+      <div id="highRiskFields">
+        <div class="toggle-row" onclick="toggleField('deviceLock')">
+          <span>Device Lock</span>
+          <div class="switch on" id="swDeviceLock"><div class="knob"></div></div>
+        </div>
+        <div class="note" id="deviceLockNote" style="display:none;margin-top:-4px;margin-bottom:8px;">
+          For workplace attendance: approves pre-registered devices, or requires admin approval on first scan if roster is omitted.
+        </div>
+
+        <div class="toggle-row" onclick="toggleField('geofence')">
+          <span>Geofence</span>
+          <div class="switch on" id="swGeofence"><div class="knob"></div></div>
+        </div>
+
+        <div class="field-label">Geofence Location</div>
+        <div class="box">📍 Pick on map</div>
+
+        <div class="field-label">Radius (meters)</div>
+        <input type="text" id="radiusInput" class="box" value="150" placeholder="e.g. 150" oninput="setRadius(this.value)">
+
+        <div class="field-label">QR Mode</div>
+        <div class="toggle-row" onclick="setQrMode('Dynamic')">
+          <span>Dynamic (recommended)</span><span id="qrHighDynamic">●</span>
+        </div>
+        <div class="toggle-row" onclick="setQrMode('Static')">
+          <span>Static</span><span id="qrHighStatic">○</span>
+        </div>
+
+        <div class="field-label">Working Hours</div>
+        <input type="text" id="workingHoursInput" class="box" value="08:00 – 17:00" placeholder="08:00 – 17:00" oninput="setWorkingHours(this.value)">
+
+        <div class="field-label">Late Grace Interval</div>
+        <input type="text" id="graceIntervalInput" class="box" value="10 minutes" placeholder="10 minutes" oninput="setGraceInterval(this.value)">
+
+        <div class="toggle-row" id="checkoutRow" onclick="toggleField('checkoutRequired')">
+          <span>Check-out Required</span>
+          <div class="switch on" id="swCheckout"><div class="knob"></div></div>
+        </div>
+
+        <div class="toggle-row" onclick="toggleField('telegram')">
+          <span>Connect Telegram Account</span>
+          <div class="switch" id="swTelegram"><div class="knob"></div></div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="nextScreen()">Continue</button>
+    </div>
+
+    <!-- Screen 4: Capacity & Access (Expected Participants + Session Image + Access/Roster) -->
+    <div class="screen" data-screen="4">
+      <h2>Capacity & Access</h2>
+      <p class="sub" id="rosterSub">Set attendee capacity, photo, co-managers, and roster.</p>
+      
+      <div class="field-label">Expected Participants (optional)</div>
+      <input type="text" id="participantsInput" class="box" value="50" placeholder="e.g. 50 (optional)" oninput="setParticipants(this.value)">
+
+      <div class="field-label" style="margin-top:12px;">Session Image (optional)</div>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+        <div id="sessionImagePreview" style="width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <!-- Default SVG or uploaded photo -->
+        </div>
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <label class="btn-secondary" style="margin:0; padding:6px 12px; font-size:11.5px; width:auto; cursor:pointer; display:inline-block;">
+              Choose Photo
+              <input type="file" id="sessionImageFileInput" accept="image/*" style="display:none;" onchange="handleSessionImageUpload(event)">
+            </label>
+            <button type="button" id="btnResetSessionImage" class="btn-secondary" style="margin:0; padding:6px 10px; font-size:11.5px; width:auto; display:none;" onclick="resetSessionImage()">Reset</button>
+          </div>
+          <div style="font-size:10.5px; color:var(--muted); margin-top:4px;" id="sessionImageNote">Default icon for this type is active.</div>
+        </div>
+      </div>
+
+      <div class="field-label" id="accessManagementLabel" style="margin-top:12px;">Access & Management</div>
+      <button class="btn-secondary" id="primaryRosterBtn" onclick="toggleRosterPrimary()">+ Add Manager</button>
+      <button class="btn-secondary" id="secondaryRosterBtn" onclick="toggleRosterSecondary()">+ Upload / Add Roster (optional)</button>
+      <div class="note" id="rosterNote">Managers get the same access as you, except deleting the session or transferring ownership. Roster upload is optional.</div>
+      <button class="btn-primary" onclick="nextScreen()">Continue</button>
+    </div>
+
+    <!-- Screen 5: Review -->
+    <div class="screen" data-screen="5">
+      <h2>Review & Create</h2>
+      <div class="summary-row"><span>Type</span><span id="sumType">Events</span></div>
+      <div class="summary-row"><span>Name</span><span id="sumName">Downtown Job Fair</span></div>
+      <div class="summary-row" id="sumImageRow">
+        <span>Session Image</span>
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span id="sumImagePreview" style="display:inline-flex; align-items:center;"></span>
+          <span id="sumImageLabel">Default</span>
+        </span>
+      </div>
+      <div class="summary-row"><span>Managed by</span><span id="sumScope">Group</span></div>
+      <div class="summary-row"><span>Lifetime</span><span id="sumLifetime">Ongoing</span></div>
+      <div class="summary-row" id="sumEndDateRow" style="display:none;"><span>End Date</span><span id="sumEndDate">Today, 18:00 PM</span></div>
+      
+      <!-- Screen 4 Expected Participants summary row (Group scope only) -->
+      <div class="summary-row" id="sumParticipantsRow"><span>Expected Participants</span><span id="sumParticipants">50</span></div>
+      
+      <!-- Screen 3 High-risk summary rows (Class Attendance / Workplace Attendance only) -->
+      <div class="summary-row" id="sumDeviceRow" style="display:none;"><span>Device Lock</span><span id="sumDevice">ON</span></div>
+      <div class="summary-row" id="sumGeoRow" style="display:none;"><span>Geofence</span><span id="sumGeo">ON (150m)</span></div>
+      <div class="summary-row" id="sumHoursRow" style="display:none;"><span>Working Hours</span><span id="sumHours">08:00 – 17:00</span></div>
+      <div class="summary-row" id="sumCheckoutRow" style="display:none;"><span>Check-out</span><span id="sumCheckout">Required</span></div>
+      <div class="summary-row" id="sumTelegramRow" style="display:none;"><span>Connect Telegram Account</span><span id="sumTelegram">OFF</span></div>
+      <div class="summary-row" id="sumQrRow" style="display:none;"><span>QR Mode</span><span id="sumQr">Dynamic</span></div>
+      
+      <!-- Screen 4 Manager / Roster rows (Group scope only) -->
+      <div class="summary-row" id="sumManagersRow"><span>Managers</span><span id="sumManagers">None</span></div>
+      <div class="summary-row" id="sumRosterRow"><span>Roster</span><span id="sumRoster">None</span></div>
+      
+      <button class="btn-primary" onclick="createSession()">Create Session</button>
+    </div>
+
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <!-- Roster Bulk Selection Action Bar (Fixed above phone bottom edge) -->
+  <div id="rosterSelectionActionBar" style="display:none; position:absolute; bottom:0; left:0; width:100%; background:#fff; border-top:1.5px solid #333; padding:12px 16px; z-index:95; box-shadow:0 -4px 16px rgba(0,0,0,0.15); box-sizing:border-box;">
+    <div style="display:flex; gap:10px;">
+      <button class="btn-primary" style="margin:0; flex:1; padding:10px 8px; font-size:12px; background:#222;" onclick="bulkApproveSelected()">✓ Approve Selected (<span id="bulkApproveCount">0</span>)</button>
+      <button class="btn-secondary" style="margin:0; flex:1; padding:10px 8px; font-size:12px; color:#555; border-color:#888;" onclick="bulkRejectSelected()">✕ Reject Selected (<span id="bulkRejectCount">0</span>)</button>
+    </div>
+  </div>
+
+  <!-- Persistent Scan to Check-in FAB (Circular & Centered across all tabs, Icon Only) -->
+  <div class="scan-fab" id="scanFabBtn" onclick="openScannerOverlay()" title="Scan to Check-in">
+    <span style="font-size:24px; line-height:1;">⛶</span>
+  </div>
+
+  <!-- Scanner Screen Overlay -->
+  <div id="scannerOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:#fff; z-index:200; overflow-y:auto; box-sizing:border-box;">
+    <div class="statusbar"></div>
+    <div class="topbar">
+      <span class="back" onclick="closeScannerOverlay()">✕ Close</span>
+      <span class="title">Scan to Check-in</span>
+      <span class="step">Scanner</span>
+    </div>
+    <div style="padding: 20px 18px 40px; text-align: center;">
+      <h2 style="margin:0; font-size:15px;">Scan Session QR Code</h2>
+      <p class="sub" style="margin:4px 0 16px; font-size:11.5px;">Align the QR code within the viewfinder frame</p>
+
+      <!-- Viewfinder box -->
+      <div style="width:200px; height:200px; margin:0 auto 16px; border:2.5px dashed var(--line); border-radius:18px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#fafafa;">
+        <div style="font-size:42px; line-height:1; color:#555; margin-bottom:8px;">⛶</div>
+        <div style="font-size:12px; font-weight:bold; color:var(--text);">Viewfinder</div>
+        <div style="font-size:10.5px; color:var(--muted); margin-top:3px;">Ready to scan</div>
+      </div>
+
+      <div class="note" style="text-align:left; margin-bottom:16px;">
+        Automatic verification for Dynamic & Static tokens, registered device lock, and geofence radius.
+      </div>
+
+      <button class="btn-primary" onclick="simulateScanSuccess()">Simulate Scan Success</button>
+      <button class="btn-secondary" style="margin-top:8px;" onclick="closeScannerOverlay()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let current = 1;
+
+const state = {
+  type: 'events',
+  name: 'Downtown Job Fair',
+  customImage: null,
+  scope: 'Group',
+  startDate: 'Today, 09:00 AM',
+  lifetime: 'Ongoing',
+  endDate: 'Today, 18:00 PM',
+  participants: '50',
+  guestCheckIn: true,
+  deviceLock: true,
+  geofence: true,
+  radius: '150',
+  qrMode: 'Static',
+  workingHours: '08:00 – 17:00',
+  graceInterval: '10 minutes',
+  checkoutRequired: true,
+  telegram: false,
+  managerAdded: false,
+  rosterUploaded: false
+};
+
+function getSessionImageHtml(type, customImage, size = 40){
+  if(customImage){
+    return `<img src="${customImage}" alt="Session Image" style="width:${size}px; height:${size}px; border-radius:50%; object-fit:cover; display:block; border:1px solid #777;">`;
+  }
+  const svgs = {
+    class: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><path d="M18 7L3 15l15 8 15-8-15-8z"/><path d="M9 18.2V26c0 4.5 4 6 9 6s9-1.5 9-6v-7.8"/><path d="M30 16.5V25"/></svg>`,
+    academics: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><path d="M18 7L3 15l15 8 15-8-15-8z"/><path d="M9 18.2V26c0 4.5 4 6 9 6s9-1.5 9-6v-7.8"/><path d="M30 16.5V25"/></svg>`,
+    workplace: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><rect x="7" y="6" width="22" height="25" rx="2"/><path d="M14 31V25h8v6"/><line x1="12" y1="11" x2="14" y2="11"/><line x1="17" y1="11" x2="19" y2="11"/><line x1="22" y1="11" x2="24" y2="11"/><line x1="12" y1="16" x2="14" y2="16"/><line x1="17" y1="16" x2="19" y2="16"/><line x1="22" y1="16" x2="24" y2="16"/><line x1="12" y1="21" x2="14" y2="21"/><line x1="17" y1="21" x2="19" y2="21"/><line x1="22" y1="21" x2="24" y2="21"/></svg>`,
+    work: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><rect x="7" y="6" width="22" height="25" rx="2"/><path d="M14 31V25h8v6"/><line x1="12" y1="11" x2="14" y2="11"/><line x1="17" y1="11" x2="19" y2="11"/><line x1="22" y1="11" x2="24" y2="11"/><line x1="12" y1="16" x2="14" y2="16"/><line x1="17" y1="16" x2="19" y2="16"/><line x1="22" y1="16" x2="24" y2="16"/><line x1="12" y1="21" x2="14" y2="21"/><line x1="17" y1="21" x2="19" y2="21"/><line x1="22" y1="21" x2="24" y2="21"/></svg>`,
+    events: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><rect x="6" y="9" width="24" height="18" rx="2"/><circle cx="6" cy="18" r="3" fill="#fff" stroke="#333"/><circle cx="30" cy="18" r="3" fill="#fff" stroke="#333"/><line x1="18" y1="11" x2="18" y2="25" stroke-dasharray="2 2"/></svg>`,
+    others: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><circle cx="18" cy="18" r="13"/><polygon points="18,10 20.5,15.5 26,18 20.5,20.5 18,26 15.5,20.5 10,18 15.5,15.5" fill="#333"/></svg>`
+  };
+  return svgs[type] || svgs.others;
+}
+
+function getSessionCoverHtml(type, customImage, height = 130){
+  if(customImage){
+    return `
+      <img src="${customImage}" alt="Session Cover" style="width:100%; height:${height}px; object-fit:cover; display:block;">
+      <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(0,0,0,0.65); color:#fff; padding:2px 7px; border-radius:4px; font-weight:500; pointer-events:none;">📷 Cover Photo</span>
+    `;
+  }
+  const defaultCovers = {
+    class: `
+      <svg width="100%" height="${height}" viewBox="0 0 375 130" preserveAspectRatio="xMidYMid slice" fill="none" style="display:block; background:#e8edf0;">
+        <rect width="375" height="130" fill="#e8edf0"/>
+        <line x1="0" y1="130" x2="375" y2="0" stroke="#d5dde2" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="0" y1="65" x2="375" y2="65" stroke="#d5dde2" stroke-width="1" stroke-dasharray="2 2"/>
+        <circle cx="187.5" cy="52" r="30" fill="#fff" stroke="#99aab5" stroke-width="1.5"/>
+        <path d="M187.5 38L171 47.5l16.5 9.5 16.5-9.5-16.5-9.5z" fill="#444" stroke="#222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M177 52v9.5c0 4.5 4.5 5.5 10.5 5.5s10.5-1 10.5-5.5V52" fill="none" stroke="#222" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M201 50v9" stroke="#222" stroke-width="1.5"/>
+        <text x="187.5" y="104" text-anchor="middle" fill="#556b78" font-size="10.5" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" letter-spacing="0.06em">CLASS ATTENDANCE</text>
+      </svg>
+      <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(0,0,0,0.5); color:#fff; padding:2px 7px; border-radius:4px; font-weight:500; pointer-events:none;">Default Cover</span>
+    `,
+    workplace: `
+      <svg width="100%" height="${height}" viewBox="0 0 375 130" preserveAspectRatio="xMidYMid slice" fill="none" style="display:block; background:#edeef0;">
+        <rect width="375" height="130" fill="#edeef0"/>
+        <line x1="40" y1="0" x2="40" y2="130" stroke="#dbdee2" stroke-width="1"/>
+        <line x1="120" y1="0" x2="120" y2="130" stroke="#dbdee2" stroke-width="1"/>
+        <line x1="255" y1="0" x2="255" y2="130" stroke="#dbdee2" stroke-width="1"/>
+        <line x1="335" y1="0" x2="335" y2="130" stroke="#dbdee2" stroke-width="1"/>
+        <circle cx="187.5" cy="52" r="30" fill="#fff" stroke="#99aab5" stroke-width="1.5"/>
+        <rect x="176" y="37" width="23" height="30" rx="2" fill="#f5f5f5" stroke="#333" stroke-width="1.5"/>
+        <line x1="181" y1="43" x2="184" y2="43" stroke="#333" stroke-width="1.5"/>
+        <line x1="190" y1="43" x2="193" y2="43" stroke="#333" stroke-width="1.5"/>
+        <line x1="181" y1="49" x2="184" y2="49" stroke="#333" stroke-width="1.5"/>
+        <line x1="190" y1="49" x2="193" y2="49" stroke="#333" stroke-width="1.5"/>
+        <line x1="181" y1="55" x2="184" y2="55" stroke="#333" stroke-width="1.5"/>
+        <line x1="190" y1="55" x2="193" y2="55" stroke="#333" stroke-width="1.5"/>
+        <rect x="184" y="61" width="7" height="6" fill="#333"/>
+        <text x="187.5" y="104" text-anchor="middle" fill="#556b78" font-size="10.5" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" letter-spacing="0.06em">WORKPLACE ATTENDANCE</text>
+      </svg>
+      <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(0,0,0,0.5); color:#fff; padding:2px 7px; border-radius:4px; font-weight:500; pointer-events:none;">Default Cover</span>
+    `,
+    events: `
+      <svg width="100%" height="${height}" viewBox="0 0 375 130" preserveAspectRatio="xMidYMid slice" fill="none" style="display:block; background:#f0edea;">
+        <rect width="375" height="130" fill="#f0edea"/>
+        <circle cx="60" cy="65" r="45" stroke="#ded6cf" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <circle cx="315" cy="65" r="45" stroke="#ded6cf" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <circle cx="187.5" cy="52" r="30" fill="#fff" stroke="#99aab5" stroke-width="1.5"/>
+        <rect x="174" y="40" width="27" height="22" rx="2" fill="#f5f5f5" stroke="#333" stroke-width="1.5"/>
+        <circle cx="174" cy="51" r="3" fill="#fff" stroke="#333"/>
+        <circle cx="201" cy="51" r="3" fill="#fff" stroke="#333"/>
+        <line x1="187.5" y1="42" x2="187.5" y2="60" stroke="#888" stroke-width="1.5" stroke-dasharray="2 2"/>
+        <text x="187.5" y="104" text-anchor="middle" fill="#6d5e53" font-size="10.5" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" letter-spacing="0.06em">EVENTS</text>
+      </svg>
+      <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(0,0,0,0.5); color:#fff; padding:2px 7px; border-radius:4px; font-weight:500; pointer-events:none;">Default Cover</span>
+    `,
+    others: `
+      <svg width="100%" height="${height}" viewBox="0 0 375 130" preserveAspectRatio="xMidYMid slice" fill="none" style="display:block; background:#eeeef0;">
+        <rect width="375" height="130" fill="#eeeef0"/>
+        <line x1="0" y1="0" x2="375" y2="130" stroke="#dadae0" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="0" y1="130" x2="375" y2="0" stroke="#dadae0" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <circle cx="187.5" cy="52" r="30" fill="#fff" stroke="#99aab5" stroke-width="1.5"/>
+        <polygon points="187.5,37 191,46 200,47 193,53 195,62 187.5,57 180,62 182,53 175,47 184,46" fill="#444" stroke="#222" stroke-width="1"/>
+        <text x="187.5" y="104" text-anchor="middle" fill="#626270" font-size="10.5" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" letter-spacing="0.06em">SESSION</text>
+      </svg>
+      <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(0,0,0,0.5); color:#fff; padding:2px 7px; border-radius:4px; font-weight:500; pointer-events:none;">Default Cover</span>
+    `
+  };
+  defaultCovers.academics = defaultCovers.class;
+  defaultCovers.work = defaultCovers.workplace;
+  return defaultCovers[type] || defaultCovers.others;
+}
+
+function getKhemraProfileAvatarHtml(size = 42){
+  return `
+    <div style="position:relative; width:${size}px; height:${size}px; flex-shrink:0;" title="Khemra User Profile">
+      <svg width="${size}" height="${size}" viewBox="0 0 40 40" fill="none" style="border-radius:50%; border:1.5px solid #444; background:#ebebeb; display:block;">
+        <circle cx="20" cy="14" r="6.5" fill="#444"/>
+        <path d="M8 35c0-6.627 5.373-11.5 12-11.5s12 4.873 12 11.5" fill="#444"/>
+      </svg>
+      <div style="position:absolute; bottom:-1px; right:-1px; width:15px; height:15px; border-radius:50%; background:#222; color:#fff; font-size:9px; font-weight:bold; display:flex; align-items:center; justify-content:center; border:1.5px solid #fff; line-height:1; box-shadow:0 1px 3px rgba(0,0,0,0.3);">
+        K
+      </div>
+    </div>
+  `;
+}
+
+function handleSessionImageUpload(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    state.customImage = e.target.result;
+    updateSessionImageUI();
+    updateReview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetSessionImage(){
+  state.customImage = null;
+  const fileInput = document.getElementById('sessionImageFileInput');
+  if(fileInput) fileInput.value = '';
+  updateSessionImageUI();
+  updateReview();
+}
+
+function updateSessionImageUI(){
+  const preview = document.getElementById('sessionImagePreview');
+  const btnReset = document.getElementById('btnResetSessionImage');
+  const note = document.getElementById('sessionImageNote');
+  if(preview){
+    preview.innerHTML = getSessionImageHtml(state.type, state.customImage, 48);
+  }
+  if(btnReset){
+    btnReset.style.display = state.customImage ? 'inline-block' : 'none';
+  }
+  if(note){
+    note.textContent = state.customImage ? 'Custom image uploaded.' : 'Default icon for this type is active.';
+  }
+}
+
+function getPath(){
+  const isHighRisk = (state.type === 'class' || state.type === 'workplace' || state.type === 'academics' || state.type === 'work' || state.type === 'students' || state.type === 'employees');
+  if(isHighRisk){
+    // Class Attendance / Workplace Attendance (Personal & Group) -> Screen 2 -> Screen 3 -> Screen 4 -> Screen 5
+    return [1, 2, 3, 4, 5];
+  } else {
+    // Events / Others (Personal & Group) -> Screen 2 -> Screen 4 -> Screen 5
+    return [1, 2, 4, 5];
+  }
+}
+
+function renderDots(){
+  const path = getPath();
+  const total = path.length;
+  const currentIdx = path.indexOf(current);
+  const stepNumber = (currentIdx >= 0) ? (currentIdx + 1) : 1;
+  
+  const d = document.getElementById('dots');
+  d.innerHTML = '';
+  for(let i=0; i<total; i++){
+    const el = document.createElement('div');
+    el.className = 'dot' + (i === currentIdx ? ' active' : '');
+    d.appendChild(el);
+  }
+  document.getElementById('stepLabel').textContent = stepNumber + ' / ' + total;
+}
+
+function showScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.toggle('active', parseInt(s.dataset.screen)===n);
+  });
+  current = n;
+  
+  const createBackBtn = document.getElementById('createSessionBackBtn') || document.querySelector('#flowCreateSession .topbar .back');
+  if(createBackBtn){
+    createBackBtn.style.visibility = (current === 1) ? 'hidden' : 'visible';
+  }
+  
+  renderDots();
+  if(n === 4) updateSessionImageUI();
+  if(n === 5) updateReview();
+}
+
+function nextScreen(){
+  const path = getPath();
+  const idx = path.indexOf(current);
+  if(idx >= 0 && idx < path.length - 1){
+    showScreen(path[idx + 1]);
+  }
+}
+
+function prevScreen(){
+  const path = getPath();
+  const idx = path.indexOf(current);
+  if(idx > 0){
+    showScreen(path[idx - 1]);
+  }
+}
+
+function selectType(el, type){
+  document.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  state.type = type;
+  
+  const isWorkplace = (type === 'workplace' || type === 'work' || type === 'employees');
+  const highRisk = (type === 'class' || type === 'academics' || type === 'students' || isWorkplace);
+  
+  // Set risk-based defaults
+  if(highRisk){
+    state.qrMode = 'Dynamic';
+    state.deviceLock = true;
+    state.geofence = true;
+    state.checkoutRequired = true;
+    document.getElementById('typeNote').textContent = isWorkplace
+      ? 'Enforces device approval, geofencing, and check-out. First scan triggers device approval (roster optional).'
+      : 'Turns on device lock, geofencing, and check-out by default (roster optional).';
+    document.getElementById('deviceLockNote').style.display = isWorkplace ? 'block' : 'none';
+  } else {
+    state.qrMode = 'Static';
+  }
+
+  document.getElementById('typeNote').style.display = highRisk ? 'block' : 'none';
+  document.getElementById('checkoutRow').style.display = highRisk ? 'flex' : 'none';
+    
+  updateSessionImageUI();
+  updateRosterButtons();
+  syncUI();
+  renderDots();
+  updateReview();
+}
+
+function setScope(val){
+  state.scope = val;
+  if(val === 'Personal'){
+    state.managerAdded = false;
+  }
+  document.getElementById('segScopePersonal').classList.toggle('selected', val === 'Personal');
+  document.getElementById('segScopeGroup').classList.toggle('selected', val === 'Group');
+  updateRosterButtons();
+  renderDots();
+  updateReview();
+}
+
+function setLifetime(val){
+  state.lifetime = val;
+  document.getElementById('segLifeFixed').classList.toggle('selected', val === 'Fixed Duration');
+  document.getElementById('segLifeOngoing').classList.toggle('selected', val === 'Ongoing');
+  document.getElementById('endDateContainer').style.display = (val === 'Fixed Duration') ? 'block' : 'none';
+  updateReview();
+}
+
+function setSessionName(val){ state.name = val; updateReview(); }
+function setStartDate(val){ state.startDate = val; updateReview(); }
+function setEndDate(val){ state.endDate = val; updateReview(); }
+function setParticipants(val){ state.participants = val; updateReview(); }
+function setRadius(val){ state.radius = val; updateReview(); }
+function setWorkingHours(val){ state.workingHours = val; updateReview(); }
+function setGraceInterval(val){ state.graceInterval = val; updateReview(); }
+
+function setQrMode(mode){
+  state.qrMode = mode;
+  const isStatic = (mode === 'Static');
+  
+  const highDynamic = document.getElementById('qrHighDynamic');
+  const highStatic = document.getElementById('qrHighStatic');
+  if(highDynamic && highStatic){
+    highDynamic.textContent = !isStatic ? '●' : '○';
+    highStatic.textContent = !isStatic ? '○' : '●';
+  }
+  updateReview();
+}
+
+function toggleField(key){
+  state[key] = !state[key];
+  const switchMap = {
+    deviceLock: 'swDeviceLock',
+    geofence: 'swGeofence',
+    checkoutRequired: 'swCheckout',
+    telegram: 'swTelegram'
+  };
+  const swEl = document.getElementById(switchMap[key]);
+  if(swEl){
+    swEl.classList.toggle('on', state[key]);
+  }
+  updateReview();
+}
+
+function updateRosterButtons(){
+  const isPersonal = (state.scope === 'Personal');
+  const highRisk = (state.type === 'class' || state.type === 'workplace' || state.type === 'academics' || state.type === 'work' || state.type === 'students' || state.type === 'employees');
+  const primBtn = document.getElementById('primaryRosterBtn');
+  const secBtn = document.getElementById('secondaryRosterBtn');
+  
+  if(primBtn){
+    primBtn.style.display = isPersonal ? 'none' : 'block';
+    primBtn.textContent = state.managerAdded ? '✓ 1 Manager Added (alex@khemra.io)' : '+ Add Manager';
+    primBtn.classList.toggle('added', state.managerAdded);
+  }
+  
+  if(secBtn){
+    secBtn.style.display = 'block';
+    const rosterLabel = highRisk ? '+ Upload Roster (optional)' : '+ Upload / Add Roster (optional)';
+    secBtn.textContent = state.rosterUploaded ? '✓ Roster Uploaded (42 members)' : rosterLabel;
+    secBtn.classList.toggle('added', state.rosterUploaded);
+  }
+
+  const accessLabel = document.getElementById('accessManagementLabel');
+  if(accessLabel){
+    accessLabel.textContent = isPersonal ? 'Roster (optional)' : 'Access & Management';
+  }
+
+  const rosterSub = document.getElementById('rosterSub');
+  if(rosterSub){
+    rosterSub.textContent = isPersonal 
+      ? 'Set attendee capacity, photo, and optional roster.'
+      : 'Set attendee capacity, photo, co-managers, and roster.';
+  }
+
+  const rosterNote = document.getElementById('rosterNote');
+  if(rosterNote){
+    if(isPersonal){
+      rosterNote.textContent = 'Personal session managed solely by you. Roster upload is optional — attendees can self-register or join upon scan.';
+    } else {
+      rosterNote.textContent = highRisk
+        ? 'Managers share administrative access. Roster upload is optional — attendees can self-register or be approved on first scan.'
+        : 'Managers get the same access as you, except deleting the session or transferring ownership. Roster upload is optional.';
+    }
+  }
+}
+
+function toggleRosterPrimary(){
+  state.managerAdded = !state.managerAdded;
+  updateRosterButtons();
+  updateReview();
+}
+
+function toggleRosterSecondary(){
+  state.rosterUploaded = !state.rosterUploaded;
+  updateRosterButtons();
+  updateReview();
+}
+
+function syncUI(){
+  document.getElementById('segScopePersonal').classList.toggle('selected', state.scope === 'Personal');
+  document.getElementById('segScopeGroup').classList.toggle('selected', state.scope === 'Group');
+  
+  document.getElementById('segLifeFixed').classList.toggle('selected', state.lifetime === 'Fixed Duration');
+  document.getElementById('segLifeOngoing').classList.toggle('selected', state.lifetime === 'Ongoing');
+  document.getElementById('endDateContainer').style.display = (state.lifetime === 'Fixed Duration') ? 'block' : 'none';
+
+  const switchMap = {
+    deviceLock: 'swDeviceLock',
+    geofence: 'swGeofence',
+    checkoutRequired: 'swCheckout',
+    telegram: 'swTelegram'
+  };
+  for(const k in switchMap){
+    const el = document.getElementById(switchMap[k]);
+    if(el) el.classList.toggle('on', !!state[k]);
+  }
+  
+  setQrMode(state.qrMode);
+  updateSessionImageUI();
+  updateRosterButtons();
+}
+
+function updateReview(){
+  const isPersonal = (state.scope === 'Personal');
+  const highRisk = (state.type === 'class' || state.type === 'workplace' || state.type === 'academics' || state.type === 'work' || state.type === 'students' || state.type === 'employees');
+  
+  const typeDisplayMap = {
+    events: 'Events',
+    others: 'Others',
+    class: 'Class Attendance',
+    workplace: 'Workplace Attendance',
+    academics: 'Class Attendance',
+    work: 'Workplace Attendance',
+    students: 'Class Attendance',
+    employees: 'Workplace Attendance'
+  };
+  document.getElementById('sumType').textContent = typeDisplayMap[state.type] || (state.type.charAt(0).toUpperCase() + state.type.slice(1));
+  document.getElementById('sumName').textContent = state.name || 'Untitled Session';
+
+  // Session Image row
+  const sumImagePreview = document.getElementById('sumImagePreview');
+  const sumImageLabel = document.getElementById('sumImageLabel');
+  if(sumImagePreview){
+    sumImagePreview.innerHTML = getSessionImageHtml(state.type, state.customImage, 22);
+  }
+  if(sumImageLabel){
+    sumImageLabel.textContent = state.customImage ? 'Custom Photo' : 'Default Icon';
+  }
+
+  document.getElementById('sumScope').textContent = state.scope;
+  document.getElementById('sumLifetime').textContent = state.lifetime;
+  
+  // End Date row
+  const showEndDate = (state.lifetime === 'Fixed Duration');
+  const sumEndDateRow = document.getElementById('sumEndDateRow');
+  sumEndDateRow.style.display = showEndDate ? 'flex' : 'none';
+  if(showEndDate){
+    document.getElementById('sumEndDate').textContent = state.endDate || 'Not set';
+  }
+  
+  // Expected Participants row (Screen 4) - Available for all sessions, optional
+  const sumParticipantsRow = document.getElementById('sumParticipantsRow');
+  if(sumParticipantsRow){
+    sumParticipantsRow.style.display = 'flex';
+    document.getElementById('sumParticipants').textContent = state.participants ? state.participants : 'Optional (Flexible)';
+  }
+  
+  // High-risk summary rows (Class Attendance / Workplace Attendance only)
+  document.getElementById('sumDeviceRow').style.display = highRisk ? 'flex' : 'none';
+  document.getElementById('sumDevice').textContent = state.deviceLock ? 'ON' : 'OFF';
+  
+  document.getElementById('sumGeoRow').style.display = highRisk ? 'flex' : 'none';
+  document.getElementById('sumGeo').textContent = state.geofence ? ('ON (' + (state.radius || '150') + 'm)') : 'OFF';
+  
+  document.getElementById('sumHoursRow').style.display = highRisk ? 'flex' : 'none';
+  document.getElementById('sumHours').textContent = state.workingHours || '08:00 – 17:00';
+  
+  document.getElementById('sumCheckoutRow').style.display = highRisk ? 'flex' : 'none';
+  document.getElementById('sumCheckout').textContent = state.checkoutRequired ? 'Required' : 'Optional';
+  
+  document.getElementById('sumTelegramRow').style.display = highRisk ? 'flex' : 'none';
+  document.getElementById('sumTelegram').textContent = state.telegram ? 'ON' : 'OFF';
+  
+  // QR Mode row (Shown for Class Attendance / Workplace Attendance, hidden for Events / Others where it's fixed/implied)
+  document.getElementById('sumQrRow').style.display = highRisk ? 'flex' : 'none';
+  document.getElementById('sumQr').textContent = state.qrMode;
+
+  // Manager / Roster rows (Screen 4)
+  document.getElementById('sumManagersRow').style.display = isPersonal ? 'none' : 'flex';
+  document.getElementById('sumManagers').textContent = state.managerAdded ? '1 Added' : 'None';
+  
+  document.getElementById('sumRosterRow').style.display = 'flex';
+  document.getElementById('sumRoster').textContent = state.rosterUploaded ? 'Attached (42)' : 'None (Optional)';
+}
+
+/* --- My Sessions Data & Logic --- */
+let currentFlow = 'my-sessions';
+let activeSessionId = null;
+let sessionFilter = 'all';
+
+function setSessionFilter(val){
+  sessionFilter = val;
+  const sel = document.getElementById('sessionStatusFilter');
+  if(sel && sel.value !== val) sel.value = val;
+  renderMySessionsList();
+}
+
+let mySessionsData = [
+  {
+    id: 1,
+    name: 'CS302: Software Architecture',
+    type: 'class',
+    role: 'Owner',
+    managedBy: 'Group',
+    lifetime: 'Ongoing',
+    status: 'ongoing',
+    participants: 65,
+    deviceLock: true,
+    geofence: true,
+    radius: '100',
+    workingHours: '09:00 – 11:30',
+    graceInterval: '15 minutes',
+    checkoutRequired: true,
+    telegram: true,
+    qrMode: 'Dynamic'
+  },
+  {
+    id: 2,
+    name: 'HQ Operations - Morning Shift',
+    type: 'workplace',
+    role: 'Manager',
+    managedBy: 'Group',
+    lifetime: 'Ongoing',
+    status: 'ongoing',
+    participants: 34,
+    deviceLock: true,
+    geofence: true,
+    radius: '200',
+    workingHours: '08:00 – 17:00',
+    graceInterval: '10 minutes',
+    checkoutRequired: true,
+    telegram: false,
+    qrMode: 'Dynamic'
+  },
+  {
+    id: 3,
+    name: 'Downtown Tech Job Fair 2026',
+    type: 'events',
+    role: 'Owner',
+    managedBy: 'Group',
+    lifetime: 'Fixed Duration',
+    status: 'past',
+    endedOn: '22 Sep 2026',
+    participants: 180,
+    deviceLock: false,
+    geofence: false,
+    radius: '150',
+    workingHours: '09:00 – 18:00',
+    graceInterval: '10 minutes',
+    checkoutRequired: false,
+    telegram: true,
+    qrMode: 'Static'
+  },
+  {
+    id: 4,
+    name: 'Product Design Sprint Workshop',
+    type: 'others',
+    role: 'Manager',
+    managedBy: 'Group',
+    lifetime: 'Ongoing',
+    status: 'ongoing',
+    participants: 25,
+    deviceLock: false,
+    geofence: false,
+    radius: '100',
+    workingHours: '13:00 – 17:00',
+    graceInterval: '10 minutes',
+    checkoutRequired: false,
+    telegram: false,
+    qrMode: 'Static'
+  },
+  {
+    id: 5,
+    name: 'Personal Study & Lab Work',
+    type: 'others',
+    role: 'Owner',
+    managedBy: 'Personal',
+    lifetime: 'Fixed Duration',
+    status: 'past',
+    endedOn: '15 Aug 2026',
+    participants: 1,
+    deviceLock: false,
+    geofence: false,
+    radius: '50',
+    workingHours: 'Flexible',
+    graceInterval: '0 minutes',
+    checkoutRequired: false,
+    telegram: false,
+    qrMode: 'Static'
+  }
+];
+
+const sampleRosterData = {
+  highRisk: [
+    { name: 'Sokha Chan', id: 'EMP-1021', status: 'Approved', device: 'iPhone 13' },
+    { name: 'Vannak Lim', id: 'EMP-1044', status: 'Pending Device Approval', device: 'Galaxy S22' },
+    { name: 'Bopha Pich', id: 'EMP-1052', status: 'Approved', device: 'Pixel 7' },
+    { name: 'Dara Sam', id: 'EMP-1090', status: 'Pending Device Approval', device: 'Redmi Note 12' },
+    { name: 'Chenda Meas', id: 'EMP-1115', status: 'Approved', device: 'iPhone 15' }
+  ],
+  lowRisk: [
+    { name: 'Alex Johnson', id: 'Ticket #0012', time: '09:05 AM', status: 'Approved' },
+    { name: 'Maria Garcia', id: 'Ticket #0045', time: '09:12 AM', status: 'Approved' },
+    { name: 'David Kim', id: 'Ticket #0078', time: '09:21 AM', status: 'Pending Device Approval' },
+    { name: 'Sreymom Heng', id: 'Ticket #0093', time: '09:44 AM', status: 'Approved' },
+    { name: 'Kosal Chea', id: 'Guest Scan', time: '10:02 AM', status: 'Pending Device Approval' }
+  ]
+};
+
+const sampleRecordsData = {
+  highRisk: [
+    { name: 'Sokha Chan', in: '08:02 AM', out: '17:05 PM', note: 'On Time' },
+    { name: 'Vannak Lim', in: '08:18 AM', out: '--', note: 'Grace (Late)' },
+    { name: 'Bopha Pich', in: '07:55 AM', out: '17:00 PM', note: 'On Time' },
+    { name: 'Chenda Meas', in: '08:00 AM', out: '16:58 PM', note: 'On Time' }
+  ],
+  lowRisk: [
+    { name: 'Alex Johnson', in: '09:05 AM', note: 'Checked In' },
+    { name: 'Maria Garcia', in: '09:12 AM', note: 'Checked In' },
+    { name: 'David Kim', in: '09:21 AM', note: 'Checked In' },
+    { name: 'Sreymom Heng', in: '09:44 AM', note: 'Checked In' },
+    { name: 'Kosal Chea', in: '10:02 AM', note: 'Checked In' }
+  ]
+};
+
+/* --- My Attendance Data & Logic --- */
+let activeAttendanceId = null;
+let attendanceFilter = 'all';
+
+function setAttendanceFilter(val){
+  attendanceFilter = val;
+  const sel = document.getElementById('attendanceStatusFilter');
+  if(sel && sel.value !== val) sel.value = val;
+  renderMyAttendanceList();
+}
+
+const samplePeersData = {
+  workplace: {
+    label: 'Coworkers in this Shift (34 present)',
+    peers: [
+      { name: 'You (Alex)', time: '08:24 AM', role: 'Staff', isSelf: true },
+      { name: 'Sokha Chan', time: '08:02 AM', role: 'Staff' },
+      { name: 'Bopha Pich', time: '07:55 AM', role: 'Staff' },
+      { name: 'Chenda Meas', time: '08:00 AM', role: 'Staff' },
+      { name: 'Vannak Lim', time: '08:18 AM', role: 'Staff (Late)' }
+    ],
+    moreCount: 29,
+    moreLabel: 'more coworkers checked in'
+  },
+  class: {
+    label: 'Classmates in this Lecture (42 present)',
+    peers: [
+      { name: 'You (Alex)', time: '08:58 AM', role: 'Student', isSelf: true },
+      { name: 'Dara Sam', time: '08:45 AM', role: 'Student' },
+      { name: 'Sreymom Heng', time: '08:50 AM', role: 'Student' },
+      { name: 'David Kim', time: '08:55 AM', role: 'Student' },
+      { name: 'Rithy Seng', time: '09:00 AM', role: 'Student' }
+    ],
+    moreCount: 37,
+    moreLabel: 'more classmates checked in'
+  },
+  events: {
+    label: 'Fellow Attendees (180 registered)',
+    peers: [
+      { name: 'You (Alex)', time: '09:14 AM', role: 'Ticket #0042', isSelf: true },
+      { name: 'Alex Johnson', time: '09:05 AM', role: 'Ticket #0012' },
+      { name: 'Maria Garcia', time: '09:12 AM', role: 'Ticket #0045' },
+      { name: 'David Kim', time: '09:21 AM', role: 'Ticket #0078' },
+      { name: 'Kosal Chea', time: '10:02 AM', role: 'Guest' }
+    ],
+    moreCount: 175,
+    moreLabel: 'more attendees'
+  },
+  others: {
+    label: 'Session Participants (25 present)',
+    peers: [
+      { name: 'You (Alex)', time: '13:02 PM', role: 'Participant', isSelf: true },
+      { name: 'Sreymom Heng', time: '12:55 PM', role: 'Participant' },
+      { name: 'David Kim', time: '13:00 PM', role: 'Participant' },
+      { name: 'Bopha Pich', time: '13:05 PM', role: 'Participant' }
+    ],
+    moreCount: 21,
+    moreLabel: 'more participants'
+  }
+};
+
+function renderAttendancePeers(item){
+  const labelEl = document.getElementById('attendDetailPeersLabel');
+  const listEl = document.getElementById('attendDetailPeersList');
+  if(!labelEl || !listEl) return;
+
+  const data = samplePeersData[item.type] || samplePeersData.workplace;
+  labelEl.textContent = data.label;
+
+  let html = '';
+  data.peers.forEach((p, idx) => {
+    const isSelf = p.isSelf;
+    const timeDisplay = isSelf ? (item.checkInTime || p.time) : p.time;
+    const borderStyle = (idx === data.peers.length - 1 && !data.moreCount) ? '' : 'border-bottom:1px dashed #e0e0e0;';
+    html += `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; ${borderStyle} font-size:12px;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:${isSelf ? '#222' : '#eee'}; color:${isSelf ? '#fff' : '#444'}; font-size:10px; font-weight:bold;">
+            ${isSelf ? '★' : p.name.charAt(0)}
+          </span>
+          <div>
+            <span style="font-weight:${isSelf ? 'bold' : 'normal'}; color:var(--text);">${p.name}</span>
+            ${p.role ? `<span style="font-size:10.5px; color:var(--muted); margin-left:4px;">(${p.role})</span>` : ''}
+          </div>
+        </div>
+        <span style="font-size:11px; color:var(--muted);">${timeDisplay}</span>
+      </div>
+    `;
+  });
+
+  if(data.moreCount){
+    html += `
+      <div style="padding:6px 0 3px; font-size:11px; color:var(--muted); text-align:center;">
+        + ${data.moreCount} ${data.moreLabel}
+      </div>
+    `;
+  }
+
+  listEl.innerHTML = html;
+}
+
+let myAttendanceData = [
+  {
+    id: 101,
+    name: 'HQ Operations - Morning Shift',
+    type: 'workplace',
+    sessionTime: '08:00 – 17:00',
+    date: 'Today, 25 Sep',
+    period: 'ongoing',
+    status: 'Late',
+    checkInTime: '08:24 AM',
+    checkOutTime: '--',
+    lateReason: 'Heavy traffic on Monivong Blvd',
+    requiredTime: '08:00 AM (Grace ended 08:10 AM)',
+    device: 'iPhone 13 (Approved)',
+    geofenceStatus: 'Inside Geofence (HQ Building 2)',
+    checkoutRequired: true
+  },
+  {
+    id: 102,
+    name: 'CS302: Software Architecture',
+    type: 'class',
+    sessionTime: '09:00 – 11:30',
+    date: 'Today, 25 Sep',
+    period: 'ongoing',
+    status: 'Checked Out',
+    checkInTime: '08:58 AM',
+    checkOutTime: '11:32 AM',
+    lateReason: null,
+    requiredTime: '09:00 AM',
+    device: 'iPhone 13 (Approved)',
+    geofenceStatus: 'Inside Geofence (Lab 4B)',
+    checkoutRequired: true
+  },
+  {
+    id: 103,
+    name: 'Downtown Tech Job Fair 2026',
+    type: 'events',
+    sessionTime: '09:00 – 18:00',
+    date: '22 Sep 2026',
+    period: 'past',
+    status: 'Checked In',
+    checkInTime: '09:14 AM',
+    checkOutTime: 'N/A (Not required)',
+    lateReason: null,
+    requiredTime: 'Anytime during event',
+    device: 'Attendee QR (Ticket #0042)',
+    geofenceStatus: 'On-site Static QR',
+    checkoutRequired: false
+  },
+  {
+    id: 104,
+    name: 'Product Design Sprint Workshop',
+    type: 'others',
+    sessionTime: '13:00 – 17:00',
+    date: '18 Sep 2026',
+    period: 'past',
+    status: 'Checked Out',
+    checkInTime: '13:02 PM',
+    checkOutTime: '17:05 PM',
+    lateReason: null,
+    requiredTime: '13:00 PM',
+    device: 'Participant App',
+    geofenceStatus: 'Meeting Room C',
+    checkoutRequired: true
+  },
+  {
+    id: 105,
+    name: 'Q3 Department Review & Retrospective',
+    type: 'workplace',
+    sessionTime: '09:00 – 18:00',
+    date: '12 Sep 2026',
+    period: 'past',
+    status: 'Checked Out',
+    checkInTime: '09:01 AM',
+    checkOutTime: '18:04 PM',
+    lateReason: null,
+    requiredTime: '09:00 AM',
+    device: 'iPhone 13 (Approved)',
+    geofenceStatus: 'Inside Geofence',
+    checkoutRequired: true
+  }
+];
+
+function switchMainFlow(flow){
+  currentFlow = flow;
+  const isMyAttendance = (flow === 'my-attendance');
+  const isMySessions = (flow === 'my-sessions');
+  const isCreateSession = (flow === 'create-session');
+
+  document.getElementById('tabMyAttendance').classList.toggle('active', isMyAttendance);
+  document.getElementById('tabMySessions').classList.toggle('active', isMySessions);
+  document.getElementById('tabCreateSession').classList.toggle('active', isCreateSession);
+
+  document.getElementById('flowMyAttendance').style.display = isMyAttendance ? 'block' : 'none';
+  document.getElementById('flowMySessions').style.display = isMySessions ? 'block' : 'none';
+  document.getElementById('flowCreateSession').style.display = isCreateSession ? 'block' : 'none';
+
+  if(isMyAttendance){
+    closeAttendanceDetail();
+    renderMyAttendanceList();
+  } else if(isMySessions){
+    closeSessionDetail();
+    renderMySessionsList();
+  } else {
+    showScreen(current);
+  }
+}
+
+function renderMyAttendanceList(){
+  const container = document.getElementById('attendanceListContainer');
+  if(!container) return;
+
+  const typeDisplayMap = {
+    class: 'Class Attendance',
+    workplace: 'Workplace Attendance',
+    events: 'Events',
+    others: 'Others'
+  };
+
+  const ongoingList = myAttendanceData.filter(item => item.period === 'ongoing');
+  const pastList = myAttendanceData.filter(item => item.period === 'past');
+  const lateList = myAttendanceData.filter(item => item.status === 'Late');
+
+  let html = '';
+
+  const renderCard = (item) => {
+    const timeDisplay = item.sessionTime || '08:00 – 17:00';
+    let badgeClass = 'badge-status-in';
+    if(item.status === 'Checked Out') badgeClass = 'badge-status-out';
+    if(item.status === 'Late') badgeClass = 'badge-status-late';
+
+    return `
+      <div class="session-card" style="display:flex; align-items:center; gap:12px;" onclick="openAttendanceDetail(${item.id})">
+        <div style="flex-shrink:0;">
+          ${getSessionImageHtml(item.type, item.image, 42)}
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+            <div style="font-weight:bold; font-size:13.5px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
+            <span class="badge ${badgeClass}" style="flex-shrink:0; margin-left:6px;">${item.status}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--muted);">
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${timeDisplay}</span>
+            <span style="flex-shrink:0; margin-left:6px;">${item.date}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  if(attendanceFilter === 'late'){
+    html += `
+      <div style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:6px 0 8px; display:flex; justify-content:space-between;">
+        <span>Late Arrival Records (${lateList.length})</span>
+      </div>
+    `;
+    if(lateList.length === 0){
+      html += `<div class="note" style="margin-bottom:12px;">No late arrival records.</div>`;
+    } else {
+      lateList.forEach(item => { html += renderCard(item); });
+    }
+  } else {
+    // Show ongoing section if in all or ongoing
+    if(attendanceFilter === 'all' || attendanceFilter === 'ongoing'){
+      html += `
+        <div style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:6px 0 8px; display:flex; justify-content:space-between;">
+          <span>Ongoing Sessions (${ongoingList.length})</span>
+        </div>
+      `;
+      if(ongoingList.length === 0){
+        html += `<div class="note" style="margin-bottom:12px;">No active ongoing sessions.</div>`;
+      } else {
+        ongoingList.forEach(item => { html += renderCard(item); });
+      }
+    }
+
+    // Show past section if in all or past
+    if(attendanceFilter === 'all' || attendanceFilter === 'past'){
+      html += `
+        <div style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:${attendanceFilter === 'all' ? '18px' : '6px'} 0 8px; display:flex; justify-content:space-between;">
+          <span>Past Sessions (${pastList.length})</span>
+        </div>
+      `;
+      if(pastList.length === 0){
+        html += `<div class="note" style="margin-bottom:12px;">No past sessions recorded.</div>`;
+      } else {
+        pastList.forEach(item => { html += renderCard(item); });
+      }
+    }
+  }
+
+  container.innerHTML = html;
+}
+
+function openAttendanceDetail(id){
+  activeAttendanceId = id;
+  const item = myAttendanceData.find(a => a.id === id);
+  if(!item) return;
+
+  document.getElementById('myAttendanceListView').style.display = 'none';
+  document.getElementById('myAttendanceDetailView').style.display = 'block';
+
+  const attendBack = document.querySelector('#myAttendanceDetailView .back');
+  if(attendBack) attendBack.style.visibility = 'visible';
+
+  const typeDisplayMap = {
+    class: 'Class Attendance',
+    workplace: 'Workplace Attendance',
+    events: 'Events',
+    others: 'Others'
+  };
+  const typeLabel = typeDisplayMap[item.type] || item.type;
+  const timeDisplay = item.sessionTime || '08:00 – 17:00';
+
+  document.getElementById('attendDetailNavStatus').textContent = item.status;
+  document.getElementById('attendDetailName').textContent = item.name;
+
+  const attendCoverContainer = document.getElementById('attendDetailCoverContainer');
+  if(attendCoverContainer){
+    attendCoverContainer.innerHTML = getSessionCoverHtml(item.type, item.image, 130);
+  }
+
+  const attendImgContainer = document.getElementById('attendDetailImageContainer');
+  if(attendImgContainer){
+    attendImgContainer.innerHTML = getKhemraProfileAvatarHtml(42);
+  }
+
+  document.getElementById('attendDetailSub').innerHTML = `
+    <div style="display:flex; align-items:center; gap:5px; margin-bottom:3px;">
+      <span style="font-weight:bold; font-size:12px; color:var(--text);">Alex</span>
+      <span style="font-size:9.5px; font-weight:bold; color:#444; background:#e8e8e8; padding:1px 5px; border-radius:4px; border:1px solid #ccc; letter-spacing:0.02em;">Khemra Profile</span>
+    </div>
+    <div style="font-size:11px; color:var(--muted); line-height:1.35;">
+      ${typeLabel} · ${item.date} · ${timeDisplay}
+    </div>
+  `;
+
+  const badgeEl = document.getElementById('attendDetailBadge');
+  let badgeClass = 'badge-status-in';
+  if(item.status === 'Checked Out') badgeClass = 'badge-status-out';
+  if(item.status === 'Late') badgeClass = 'badge-status-late';
+  badgeEl.className = 'badge ' + badgeClass;
+  badgeEl.textContent = item.status;
+
+  const sessionTimeEl = document.getElementById('attendDetailSessionTime');
+  if(sessionTimeEl) sessionTimeEl.textContent = timeDisplay;
+
+  document.getElementById('attendDetailCheckIn').textContent = item.checkInTime || '--';
+
+  const checkOutVal = document.getElementById('attendDetailCheckOut');
+  if(item.type === 'events' || item.checkoutRequired === false){
+    checkOutVal.textContent = 'Not required for this session';
+  } else {
+    checkOutVal.textContent = item.checkOutTime || '--';
+  }
+
+  // Late Section
+  const lateSec = document.getElementById('attendLateSection');
+  if(item.status === 'Late'){
+    lateSec.style.display = 'block';
+    document.getElementById('attendLateReason').textContent = item.lateReason || 'Not specified';
+    document.getElementById('attendScheduledTime').textContent = 'Session schedule: ' + (item.requiredTime || timeDisplay);
+  } else {
+    lateSec.style.display = 'none';
+  }
+
+  // Populate Coworkers / Classmates / Attendees List
+  renderAttendancePeers(item);
+}
+
+function closeAttendanceDetail(){
+  activeAttendanceId = null;
+  const detailEl = document.getElementById('myAttendanceDetailView');
+  const listEl = document.getElementById('myAttendanceListView');
+  if(detailEl) detailEl.style.display = 'none';
+  if(listEl) listEl.style.display = 'block';
+  const attendBack = document.querySelector('#myAttendanceDetailView .back');
+  if(attendBack) attendBack.style.visibility = 'visible';
+}
+
+/* Scanner Overlay Handlers */
+function openScannerOverlay(){
+  document.getElementById('scannerOverlay').style.display = 'block';
+  document.getElementById('scanFabBtn').style.display = 'none';
+}
+
+function closeScannerOverlay(){
+  document.getElementById('scannerOverlay').style.display = 'none';
+  document.getElementById('scanFabBtn').style.display = 'flex';
+}
+
+function simulateScanSuccess(){
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const newRecord = {
+    id: Date.now(),
+    name: 'CS302: Software Architecture',
+    type: 'class',
+    image: null,
+    sessionTime: '09:00 – 11:30',
+    date: 'Today, ' + timeStr,
+    period: 'ongoing',
+    status: 'Checked In',
+    checkInTime: timeStr,
+    checkOutTime: '--',
+    lateReason: null,
+    requiredTime: '09:00 AM',
+    device: 'iPhone 13 (Approved)',
+    geofenceStatus: 'Inside Geofence (Lab 4B)',
+    checkoutRequired: true
+  };
+  myAttendanceData.unshift(newRecord);
+
+  alert('✓ Scan Successful!\nChecked in to "' + newRecord.name + '" at ' + timeStr);
+  closeScannerOverlay();
+  switchMainFlow('my-attendance');
+}
+
+function renderMySessionsList(){
+  const container = document.getElementById('sessionsListContainer');
+  if(!container) return;
+
+  const typeDisplayMap = {
+    class: 'Class Attendance',
+    workplace: 'Workplace Attendance',
+    events: 'Events',
+    others: 'Others'
+  };
+
+  const ongoingList = mySessionsData.filter(s => s.status !== 'past');
+  const pastList = mySessionsData.filter(s => s.status === 'past');
+
+  let html = '';
+
+  const renderCard = (s, isPast) => {
+    const isOwner = (s.role === 'Owner');
+    const badgeClass = isOwner ? 'badge-owner' : 'badge-manager';
+    const metaInfo = isPast && s.endedOn
+      ? ('Ended ' + s.endedOn)
+      : ((s.managedBy || 'Group') + ' · ' + (s.lifetime || 'Ongoing'));
+
+    const statusBadge = isPast
+      ? `<span class="badge" style="background:#eee; color:#666; border:1px dashed #999; margin-right:4px;">Ended</span>`
+      : '';
+    const timeDisplay = s.workingHours || (s.type === 'events' ? '09:00 – 18:00' : '08:00 – 17:00');
+
+    return `
+      <div class="session-card" style="${isPast ? 'opacity:0.85;' : ''} display:flex; align-items:center; gap:12px;" onclick="openSessionDetail(${s.id})">
+        <div style="flex-shrink:0;">
+          ${getSessionImageHtml(s.type, s.image, 42)}
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+            <div style="font-weight:bold; font-size:13.5px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.name}</div>
+            <div style="display:flex; align-items:center; flex-shrink:0; margin-left:6px;">
+              ${statusBadge}
+              <span class="badge ${badgeClass}">${s.role}</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--muted);">
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${timeDisplay}</span>
+            <span style="flex-shrink:0; margin-left:6px;">${metaInfo}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  // If filter is all or ongoing
+  if(sessionFilter === 'all' || sessionFilter === 'ongoing'){
+    html += `
+      <div style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:6px 0 8px; display:flex; justify-content:space-between;">
+        <span>Ongoing Sessions (${ongoingList.length})</span>
+      </div>
+    `;
+    if(ongoingList.length === 0){
+      html += `<div class="note" style="margin-bottom:12px;">No active ongoing sessions.</div>`;
+    } else {
+      ongoingList.forEach(s => { html += renderCard(s, false); });
+    }
+  }
+
+  // If filter is all or past
+  if(sessionFilter === 'all' || sessionFilter === 'past'){
+    html += `
+      <div style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:${sessionFilter === 'all' ? '18px' : '6px'} 0 8px; display:flex; justify-content:space-between;">
+        <span>Past Sessions (${pastList.length})</span>
+      </div>
+    `;
+    if(pastList.length === 0){
+      html += `<div class="note" style="margin-bottom:12px;">No past sessions recorded.</div>`;
+    } else {
+      pastList.forEach(s => { html += renderCard(s, true); });
+    }
+  }
+
+  html += `
+    <button class="btn-secondary" style="border-style:dashed; margin-top:14px;" onclick="switchMainFlow('create-session')">+ New Session</button>
+  `;
+
+  container.innerHTML = html;
+}
+
+function openSessionDetail(id){
+  activeSessionId = id;
+  const session = mySessionsData.find(s => s.id === id);
+  if(!session) return;
+
+  document.getElementById('mySessionListView').style.display = 'none';
+  document.getElementById('mySessionDetailView').style.display = 'block';
+
+  const sessionBack = document.querySelector('#mySessionDetailView .back');
+  if(sessionBack) sessionBack.style.visibility = 'visible';
+
+  const isHighRisk = (session.type === 'class' || session.type === 'workplace');
+  const typeDisplayMap = {
+    class: 'Class Attendance',
+    workplace: 'Workplace Attendance',
+    events: 'Events',
+    others: 'Others'
+  };
+  const typeLabel = typeDisplayMap[session.type] || session.type;
+  const sessionTime = session.workingHours || (session.type === 'events' ? '09:00 – 18:00' : '08:00 – 17:00');
+
+  document.getElementById('detailName').textContent = session.name;
+
+  const detailCoverContainer = document.getElementById('detailCoverContainer');
+  if(detailCoverContainer){
+    detailCoverContainer.innerHTML = getSessionCoverHtml(session.type, session.image, 130);
+  }
+
+  const detailImgContainer = document.getElementById('detailImageContainer');
+  if(detailImgContainer){
+    detailImgContainer.innerHTML = getKhemraProfileAvatarHtml(42);
+  }
+
+  document.getElementById('detailSubInfo').innerHTML = `
+    <div style="display:flex; align-items:center; gap:5px; margin-bottom:3px;">
+      <span style="font-weight:bold; font-size:12px; color:var(--text);">Alex</span>
+      <span style="font-size:9.5px; font-weight:bold; color:#444; background:#e8e8e8; padding:1px 5px; border-radius:4px; border:1px solid #ccc; letter-spacing:0.02em;">Khemra Profile</span>
+    </div>
+    <div style="font-size:11px; color:var(--muted); line-height:1.35;">
+      ${typeLabel} · ${sessionTime} · ${(session.managedBy || 'Group')} · ${(session.lifetime || 'Ongoing')}
+    </div>
+  `;
+
+  const badgeEl = document.getElementById('detailBadge');
+  badgeEl.className = 'badge ' + (session.role === 'Owner' ? 'badge-owner' : 'badge-manager');
+  badgeEl.textContent = session.role;
+  document.getElementById('detailNavRole').textContent = session.role;
+
+  // Set up QR tab
+  const isDynamic = (session.qrMode === 'Dynamic' || isHighRisk);
+  document.getElementById('qrCardTitle').textContent = isDynamic ? 'Dynamic QR Code' : 'Static QR Code';
+  document.getElementById('qrCardSub').textContent = isDynamic ? 'Refreshes every 30s' : 'Permanent scan code';
+  document.getElementById('qrDynamicBlock').style.display = isDynamic ? 'block' : 'none';
+  document.getElementById('qrStaticBlock').style.display = !isDynamic ? 'block' : 'none';
+  document.getElementById('qrRegenStatus').textContent = 'Single-use rotating token prevents screenshot sharing.';
+
+  // Reset roster filter and selection mode
+  rosterFilter = 'All';
+  resetRosterSelectMode();
+  ['All', 'Pending', 'Approved'].forEach(f => {
+    const el = document.getElementById('rosterChip' + f);
+    if(el) el.classList.toggle('active', f === 'All');
+  });
+
+  // Set up Roster tab
+  renderDetailRoster(isHighRisk);
+
+  // Set up Records tab
+  renderDetailRecords(isHighRisk);
+
+  // Set up Settings tab
+  document.getElementById('settingDetailName').value = session.name;
+  document.getElementById('settingDetailHighRiskGroup').style.display = isHighRisk ? 'block' : 'none';
+  if(isHighRisk){
+    document.getElementById('swDetailDeviceLock').classList.toggle('on', !!session.deviceLock);
+    document.getElementById('swDetailGeofence').classList.toggle('on', !!session.geofence);
+    document.getElementById('settingDetailRadius').value = session.radius || '150';
+    document.getElementById('settingDetailWorkingHours').value = session.workingHours || '08:00 – 17:00';
+    document.getElementById('settingDetailGraceInterval').value = session.graceInterval || '10 minutes';
+    document.getElementById('swDetailCheckout').classList.toggle('on', !!session.checkoutRequired);
+
+    const isDyn = (session.qrMode !== 'Static');
+    document.getElementById('qrDetailDynamic').textContent = isDyn ? '●' : '○';
+    document.getElementById('qrDetailStatic').textContent = isDyn ? '○' : '●';
+  }
+  document.getElementById('swDetailTelegram').classList.toggle('on', !!session.telegram);
+
+  // Role-based actions display
+  const isOwner = (session.role === 'Owner');
+  document.getElementById('ownerActionsSection').style.display = isOwner ? 'block' : 'none';
+  document.getElementById('managerDisclaimerNote').style.display = !isOwner ? 'block' : 'none';
+
+  // Default to QR subtab
+  switchDetailSubtab('qr');
+}
+
+function closeSessionDetail(){
+  activeSessionId = null;
+  resetRosterSelectMode();
+  const detailEl = document.getElementById('mySessionDetailView');
+  const listEl = document.getElementById('mySessionListView');
+  if(detailEl) detailEl.style.display = 'none';
+  if(listEl) listEl.style.display = 'block';
+  const sessionBack = document.querySelector('#mySessionDetailView .back');
+  if(sessionBack) sessionBack.style.visibility = 'visible';
+}
+
+function switchDetailSubtab(tabName){
+  if(tabName !== 'roster') resetRosterSelectMode();
+  document.querySelectorAll('.subtabs .subtab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  const paneMap = {
+    qr: 'paneDetailQr',
+    roster: 'paneDetailRoster',
+    records: 'paneDetailRecords',
+    settings: 'paneDetailSettings'
+  };
+  document.querySelectorAll('#mySessionDetailView .detail-pane').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById(paneMap[tabName]);
+  if(target) target.classList.add('active');
+}
+
+/* Roster Filter & Bulk Selection Logic */
+let rosterFilter = 'All';
+let rosterSelectionMode = false;
+let rosterSelectedIds = new Set();
+
+function isCurrentSessionHighRisk(){
+  if(!activeSessionId) return true;
+  const s = mySessionsData.find(x => x.id === activeSessionId);
+  return s ? (s.type === 'class' || s.type === 'workplace') : true;
+}
+
+function setRosterFilter(filter){
+  rosterFilter = filter;
+  ['All', 'Pending', 'Approved'].forEach(f => {
+    const el = document.getElementById('rosterChip' + f);
+    if(el) el.classList.toggle('active', f === filter);
+  });
+  updateSelectAllCheckboxState();
+  updateRosterActionBar();
+  renderDetailRoster(isCurrentSessionHighRisk());
+}
+
+function toggleRosterSelectMode(){
+  rosterSelectionMode = !rosterSelectionMode;
+  rosterSelectedIds.clear();
+  const btn = document.getElementById('btnRosterSelectMode');
+  if(btn){
+    btn.textContent = rosterSelectionMode ? 'Cancel' : 'Select';
+    btn.classList.toggle('added', rosterSelectionMode);
+  }
+  const selectAllContainer = document.getElementById('rosterSelectAllContainer');
+  if(selectAllContainer){
+    selectAllContainer.style.display = rosterSelectionMode ? 'flex' : 'none';
+  }
+  updateRosterActionBar();
+  renderDetailRoster(isCurrentSessionHighRisk());
+}
+
+function resetRosterSelectMode(){
+  rosterSelectionMode = false;
+  rosterSelectedIds.clear();
+  const btn = document.getElementById('btnRosterSelectMode');
+  if(btn){
+    btn.textContent = 'Select';
+    btn.classList.remove('added');
+  }
+  const selectAllContainer = document.getElementById('rosterSelectAllContainer');
+  if(selectAllContainer){
+    selectAllContainer.style.display = 'none';
+  }
+  updateRosterActionBar();
+}
+
+function updateRosterActionBar(){
+  const bar = document.getElementById('rosterSelectionActionBar');
+  const fab = document.getElementById('scanFabBtn');
+  const count = rosterSelectedIds.size;
+  
+  if(bar){
+    bar.style.display = (rosterSelectionMode && count > 0) ? 'block' : 'none';
+  }
+  if(fab){
+    const scannerEl = document.getElementById('scannerOverlay');
+    const scannerOpen = scannerEl && scannerEl.style.display === 'block';
+    if(!scannerOpen){
+      fab.style.display = (rosterSelectionMode && count > 0) ? 'none' : 'flex';
+    }
+  }
+  
+  const bulkApproveCount = document.getElementById('bulkApproveCount');
+  const bulkRejectCount = document.getElementById('bulkRejectCount');
+  const countText = document.getElementById('rosterSelectedCountText');
+  if(bulkApproveCount) bulkApproveCount.textContent = count;
+  if(bulkRejectCount) bulkRejectCount.textContent = count;
+  if(countText) countText.textContent = count + ' selected';
+}
+
+function updateSelectAllCheckboxState(){
+  const isHighRisk = isCurrentSessionHighRisk();
+  const allItems = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
+  const visibleIndices = allItems
+    .map((item, originalIndex) => ({ item, originalIndex }))
+    .filter(({ item }) => {
+      if(rosterFilter === 'Pending') return item.status && item.status.toLowerCase().includes('pending');
+      if(rosterFilter === 'Approved') return item.status === 'Approved';
+      return true;
+    })
+    .map(x => x.originalIndex);
+
+  const selectAllCb = document.getElementById('rosterSelectAllCheckbox');
+  if(selectAllCb){
+    selectAllCb.checked = visibleIndices.length > 0 && visibleIndices.every(idx => rosterSelectedIds.has(idx));
+  }
+  const visCountEl = document.getElementById('rosterVisibleCount');
+  if(visCountEl) visCountEl.textContent = visibleIndices.length;
+}
+
+function toggleRosterSelectAll(isChecked){
+  const isHighRisk = isCurrentSessionHighRisk();
+  const allItems = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
+  const visibleIndices = allItems
+    .map((item, originalIndex) => ({ item, originalIndex }))
+    .filter(({ item }) => {
+      if(rosterFilter === 'Pending') return item.status && item.status.toLowerCase().includes('pending');
+      if(rosterFilter === 'Approved') return item.status === 'Approved';
+      return true;
+    })
+    .map(x => x.originalIndex);
+
+  if(isChecked){
+    visibleIndices.forEach(idx => rosterSelectedIds.add(idx));
+  } else {
+    visibleIndices.forEach(idx => rosterSelectedIds.delete(idx));
+  }
+  updateRosterActionBar();
+  renderDetailRoster(isHighRisk);
+}
+
+function toggleRosterItemSelection(idx, isChecked){
+  if(isChecked){
+    rosterSelectedIds.add(idx);
+  } else {
+    rosterSelectedIds.delete(idx);
+  }
+  updateRosterActionBar();
+  updateSelectAllCheckboxState();
+  renderDetailRoster(isCurrentSessionHighRisk());
+}
+
+function handleRosterRowClick(e, idx){
+  if(!rosterSelectionMode) return;
+  if(e.target && e.target.type === 'checkbox') return;
+  const isSelected = rosterSelectedIds.has(idx);
+  toggleRosterItemSelection(idx, !isSelected);
+}
+
+function bulkApproveSelected(){
+  const count = rosterSelectedIds.size;
+  if(count === 0) return;
+  if(!confirm('Approve ' + count + ' selected device' + (count > 1 ? 's' : '') + '?')) return;
+
+  const isHighRisk = isCurrentSessionHighRisk();
+  const data = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
+  rosterSelectedIds.forEach(idx => {
+    if(data[idx]){
+      data[idx].status = 'Approved';
+    }
+  });
+
+  alert('✓ ' + count + ' device' + (count > 1 ? 's' : '') + ' approved successfully!');
+  rosterSelectedIds.clear();
+  toggleRosterSelectMode();
+}
+
+function bulkRejectSelected(){
+  const count = rosterSelectedIds.size;
+  if(count === 0) return;
+  if(!confirm('Reject ' + count + ' selected device' + (count > 1 ? 's' : '') + '?')) return;
+
+  const isHighRisk = isCurrentSessionHighRisk();
+  const data = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
+  rosterSelectedIds.forEach(idx => {
+    if(data[idx]){
+      data[idx].status = 'Rejected';
+    }
+  });
+
+  alert('✕ ' + count + ' device' + (count > 1 ? 's' : '') + ' rejected.');
+  rosterSelectedIds.clear();
+  toggleRosterSelectMode();
+}
+
+function approveDevice(idx){
+  const isHighRisk = isCurrentSessionHighRisk();
+  const data = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
+  if(data[idx]){
+    data[idx].status = 'Approved';
+    renderDetailRoster(isHighRisk);
+  }
+}
+
+function renderDetailRoster(isHighRisk){
+  const container = document.getElementById('rosterListContainer');
+  const heading = document.getElementById('rosterPaneHeading');
+  const sub = document.getElementById('rosterPaneSub');
+
+  if(isHighRisk){
+    heading.textContent = 'Device & Member Roster';
+    sub.textContent = 'Enforces registered device approvals';
+  } else {
+    heading.textContent = 'Attendee List';
+    sub.textContent = 'Recent check-ins';
+  }
+
+  const allItems = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
+  const indexedItems = allItems.map((item, originalIndex) => ({ item, originalIndex }));
+  const visibleItems = indexedItems.filter(({ item }) => {
+    if(rosterFilter === 'Pending') return item.status && item.status.toLowerCase().includes('pending');
+    if(rosterFilter === 'Approved') return item.status === 'Approved';
+    return true;
+  });
+
+  updateSelectAllCheckboxState();
+
+  if(visibleItems.length === 0){
+    container.innerHTML = `<div class="note" style="margin-top:10px; text-align:center;">No ${rosterFilter.toLowerCase()} members found.</div>`;
+    return;
+  }
+
+  let html = '';
+  visibleItems.forEach(({ item, originalIndex }) => {
+    const isSelected = rosterSelectedIds.has(originalIndex);
+    let actionColHtml = '';
+
+    if(rosterSelectionMode){
+      actionColHtml = `
+        <input type="checkbox" style="width:16px; height:16px; cursor:pointer;" ${isSelected ? 'checked' : ''} onchange="toggleRosterItemSelection(${originalIndex}, this.checked)">
+      `;
+    } else {
+      if(isHighRisk){
+        if(item.status === 'Approved'){
+          actionColHtml = `<span class="badge-approved">Approved</span>`;
+        } else if(item.status === 'Rejected'){
+          actionColHtml = `<span class="badge" style="background:#fff; color:#777; border:1px dashed #999; font-size:10px; padding:2px 6px; border-radius:4px;">Rejected</span>`;
+        } else {
+          actionColHtml = `<span class="badge-pending" onclick="approveDevice(${originalIndex})">Approve Device</span>`;
+        }
+      } else {
+        if(item.status === 'Pending Device Approval'){
+          actionColHtml = `<span class="badge-pending" onclick="approveDevice(${originalIndex})">Approve</span>`;
+        } else {
+          actionColHtml = `<span style="font-size:11px; color:var(--muted);">${item.time || 'Approved'}</span>`;
+        }
+      }
+    }
+
+    const subDetail = isHighRisk ? `${item.id} · ${item.device || 'Registered Device'}` : item.id;
+    const rowBg = (rosterSelectionMode && isSelected) ? 'background:#f0f0f0; border-radius:4px; padding-left:4px; padding-right:4px;' : '';
+
+    html += `
+      <div class="roster-row" style="${rowBg} ${rosterSelectionMode ? 'cursor:pointer;' : ''}" onclick="handleRosterRowClick(event, ${originalIndex})">
+        <div>
+          <div style="font-weight:bold; color:var(--text);">${item.name}</div>
+          <div style="font-size:11px; color:var(--muted);">${subDetail}</div>
+        </div>
+        <div style="display:flex; align-items:center;" onclick="event.stopPropagation();">
+          ${actionColHtml}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function renderDetailRecords(isHighRisk){
+  const container = document.getElementById('recordsListContainer');
+  const countSub = document.getElementById('recordsCountSub');
+
+  if(isHighRisk){
+    countSub.textContent = 'Today: 4 Present · 1 Late';
+    let html = '';
+    sampleRecordsData.highRisk.forEach(r => {
+      html += `
+        <div class="record-row">
+          <div>
+            <div style="font-weight:bold;">${r.name}</div>
+            <div style="font-size:11px; color:var(--muted);">In: ${r.in} · Out: ${r.out}</div>
+          </div>
+          <span style="font-size:11px; font-weight:bold; color:${r.note.includes('Late') ? '#666' : '#333'};">${r.note}</span>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  } else {
+    countSub.textContent = 'Total Scans: 5 Attendees';
+    let html = '';
+    sampleRecordsData.lowRisk.forEach(r => {
+      html += `
+        <div class="record-row">
+          <div>
+            <div style="font-weight:bold;">${r.name}</div>
+            <div style="font-size:11px; color:var(--muted);">Scanned at ${r.in}</div>
+          </div>
+          <span style="font-size:11px; color:var(--muted);">${r.note}</span>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+}
+
+function regenerateQr(){
+  const btn = document.getElementById('btnRegenerateQr');
+  const status = document.getElementById('qrRegenStatus');
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  btn.textContent = '✓ Regenerated!';
+  status.textContent = 'New rotating QR generated at ' + timeStr + ' (valid 30s)';
+  setTimeout(() => {
+    btn.textContent = '↻ Regenerate QR Code';
+  }, 2200);
+}
+
+function toggleDetailSetting(key){
+  const session = mySessionsData.find(s => s.id === activeSessionId);
+  if(!session) return;
+  session[key] = !session[key];
+  const switchMap = {
+    deviceLock: 'swDetailDeviceLock',
+    geofence: 'swDetailGeofence',
+    checkoutRequired: 'swDetailCheckout',
+    telegram: 'swDetailTelegram'
+  };
+  const el = document.getElementById(switchMap[key]);
+  if(el) el.classList.toggle('on', !!session[key]);
+}
+
+function setDetailQrMode(mode){
+  const session = mySessionsData.find(s => s.id === activeSessionId);
+  if(!session) return;
+  session.qrMode = mode;
+  const isStatic = (mode === 'Static');
+  document.getElementById('qrDetailDynamic').textContent = !isStatic ? '●' : '○';
+  document.getElementById('qrDetailStatic').textContent = !isStatic ? '○' : '●';
+}
+
+function saveDetailSettings(){
+  const session = mySessionsData.find(s => s.id === activeSessionId);
+  if(!session) return;
+  session.name = document.getElementById('settingDetailName').value || session.name;
+  const isHighRisk = (session.type === 'class' || session.type === 'workplace');
+  if(isHighRisk){
+    session.radius = document.getElementById('settingDetailRadius').value;
+    session.workingHours = document.getElementById('settingDetailWorkingHours').value;
+    session.graceInterval = document.getElementById('settingDetailGraceInterval').value;
+  }
+  document.getElementById('detailName').textContent = session.name;
+  renderMySessionsList();
+  alert('Settings saved successfully!');
+}
+
+function deleteCurrentDetailSession(){
+  if(!activeSessionId) return;
+  const session = mySessionsData.find(s => s.id === activeSessionId);
+  const sessionName = session ? session.name : 'this session';
+  if(!confirm('Delete session "' + sessionName + '"? This action cannot be undone.')) return;
+  mySessionsData = mySessionsData.filter(s => s.id !== activeSessionId);
+  closeSessionDetail();
+  renderMySessionsList();
+}
+
+function createSession(){
+  const newSession = {
+    id: Date.now(),
+    name: state.name || 'Untitled Session',
+    type: state.type,
+    image: state.customImage || null,
+    role: 'Owner',
+    managedBy: state.scope,
+    lifetime: state.lifetime,
+    status: 'ongoing',
+    participants: state.participants || 'Flexible',
+    deviceLock: state.deviceLock,
+    geofence: state.geofence,
+    radius: state.radius,
+    workingHours: state.workingHours,
+    graceInterval: state.graceInterval,
+    checkoutRequired: state.checkoutRequired,
+    telegram: state.telegram,
+    qrMode: state.qrMode
+  };
+  mySessionsData.unshift(newSession);
+  alert('Session "' + newSession.name + '" created successfully!');
+  closeSessionDetail();
+  renderMySessionsList();
+  switchMainFlow('my-sessions');
+}
+
+renderDots();
+syncUI();
+updateReview();
+switchMainFlow('my-attendance');
+</script>
+</body>
+</html>
