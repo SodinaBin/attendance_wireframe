@@ -93,11 +93,10 @@
 <div class="phone">
   <div class="statusbar"></div>
 
-  <!-- Top-level Flow Switcher -->
-  <div class="flow-switcher">
+  <!-- Top-level Flow Switcher (Two Tabs) -->
+  <div class="flow-switcher" id="mainFlowSwitcher">
     <button class="flow-tab active" id="tabMyAttendance" onclick="switchMainFlow('my-attendance')">My Attendance</button>
     <button class="flow-tab" id="tabMySessions" onclick="switchMainFlow('my-sessions')">My Session</button>
-    <button class="flow-tab" id="tabCreateSession" onclick="switchMainFlow('create-session')">Create Session</button>
   </div>
 
   <!-- FLOW 1: My Attendance (List + Read-only Detail) -->
@@ -230,7 +229,7 @@
             <div id="detailName" style="font-size:15px; font-weight:bold; color:var(--text);">Downtown Job Fair</div>
             <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
               <div id="detailImageContainer" style="flex-shrink:0;"></div>
-              <div id="detailSubInfo" style="font-size:11.5px; color:var(--muted); line-height:1.4;">Events · Group · Ongoing</div>
+              <div id="detailSubInfo" style="font-size:11.5px; color:var(--muted); line-height:1.4;">08:00 – 17:00 · Ongoing</div>
             </div>
           </div>
           <span id="detailBadge" class="badge badge-owner">Owner</span>
@@ -247,21 +246,27 @@
 
       <!-- Subtab Pane 1: QR Code -->
       <div class="detail-pane active" id="paneDetailQr">
-        <div style="display:flex; flex-direction:column; align-items:center; padding:12px 0;">
+        <!-- Segmented Control for QR Mode (Static | Dynamic) -->
+        <div class="segmented" style="margin-bottom:14px;" id="detailQrSegmented">
+          <div class="seg-btn selected" id="segDetailQrStatic" onclick="setDetailTabQrMode('Static')">Static</div>
+          <div class="seg-btn" id="segDetailQrDynamic" onclick="setDetailTabQrMode('Dynamic')">Dynamic</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; align-items:center; padding:6px 0 12px;">
           <div style="width:160px; height:160px; border:2px dashed var(--line); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#fafafa; text-align:center; padding:12px; margin-bottom:12px;">
             <div style="font-size:38px; line-height:1; color:#333; margin-bottom:6px;">▣</div>
-            <div style="font-size:12px; font-weight:bold;" id="qrCardTitle">Dynamic QR Code</div>
-            <div style="font-size:10px; color:var(--muted); margin-top:3px;" id="qrCardSub">Refreshes every 30s</div>
+            <div style="font-size:12px; font-weight:bold;" id="qrCardTitle">Static QR Code</div>
+            <div style="font-size:10px; color:var(--muted); margin-top:3px;" id="qrCardSub">Permanent scan code</div>
           </div>
 
           <!-- Dynamic QR Controls -->
-          <div id="qrDynamicBlock" style="width:100%; text-align:center;">
+          <div id="qrDynamicBlock" style="width:100%; text-align:center; display:none;">
             <button class="btn-secondary" id="btnRegenerateQr" style="width:100%;" onclick="regenerateQr()">↻ Regenerate QR Code</button>
             <p class="sub" id="qrRegenStatus" style="margin-top:8px; font-size:11px;">Single-use rotating token prevents screenshot sharing.</p>
           </div>
 
           <!-- Static QR Controls -->
-          <div id="qrStaticBlock" style="width:100%; text-align:center; display:none;">
+          <div id="qrStaticBlock" style="width:100%; text-align:center;">
             <p class="sub" style="font-size:11.5px; margin-bottom:8px;">Fixed QR code for flyers, badges, or projector display.</p>
             <button class="btn-secondary" style="width:100%;" onclick="alert('Static QR downloaded / print ready.')">⬇ Download / Print QR</button>
           </div>
@@ -321,8 +326,8 @@
         <div class="field-label">Session Name</div>
         <input type="text" id="settingDetailName" class="box" value="">
 
-        <!-- Conditional High-risk Settings (Class Attendance / Workplace Attendance) -->
-        <div id="settingDetailHighRiskGroup">
+        <!-- Security & Attendance Settings (for all sessions) -->
+        <div id="settingDetailSecurityGroup">
           <div class="field-label">Security & Restrictions</div>
           <div class="toggle-row" onclick="toggleDetailSetting('deviceLock')">
             <span>Device Lock</span>
@@ -336,14 +341,6 @@
 
           <div class="field-label">Radius (meters)</div>
           <input type="text" id="settingDetailRadius" class="box" value="150">
-
-          <div class="field-label">QR Mode</div>
-          <div class="toggle-row" onclick="setDetailQrMode('Dynamic')">
-            <span>Dynamic (recommended)</span><span id="qrDetailDynamic">●</span>
-          </div>
-          <div class="toggle-row" onclick="setDetailQrMode('Static')">
-            <span>Static</span><span id="qrDetailStatic">○</span>
-          </div>
 
           <div class="field-label">Working Hours</div>
           <input type="text" id="settingDetailWorkingHours" class="box" value="08:00 – 17:00">
@@ -380,46 +377,21 @@
     </div>
   </div>
 
-  <!-- FLOW 2: Create Session Flow (Existing Screens 1 to 5) -->
+  <!-- FLOW 3: Create Session Flow (Unified 3 Steps) -->
   <div id="flowCreateSession" style="display:none;">
     <div class="topbar">
       <span class="back" id="createSessionBackBtn" onclick="prevScreen()">‹ Back</span>
       <span class="title">New Session</span>
-      <span class="step" id="stepLabel">1 / 5</span>
+      <span class="step" id="stepLabel">1 / 3</span>
     </div>
 
-    <!-- Screen 1: Choose Type -->
+    <!-- Step 1: Essentials -->
     <div class="screen active" data-screen="1">
-      <h2>What kind of session is this?</h2>
-      <p class="sub">This decides which fields and restrictions we'll set up next.</p>
-      <div class="option selected" data-type="events" onclick="selectType(this,'events')">
-        <div class="radio"></div> Events <span style="margin-left:auto;font-weight:normal;color:var(--muted)">low restriction</span>
-      </div>
-      <div class="option" data-type="others" onclick="selectType(this,'others')">
-        <div class="radio"></div> Others <span style="margin-left:auto;font-weight:normal;color:var(--muted)">general purpose</span>
-      </div>
-      <div class="option" data-type="class" onclick="selectType(this,'class')">
-        <div class="radio"></div> Class Attendance <span style="margin-left:auto;font-weight:normal;color:var(--muted)">attendance-critical</span>
-      </div>
-      <div class="option" data-type="workplace" onclick="selectType(this,'workplace')">
-        <div class="radio"></div> Workplace Attendance <span style="margin-left:auto;font-weight:normal;color:var(--muted)">attendance-critical</span>
-      </div>
-      <div class="note" id="typeNote" style="display:none;">This type turns on device lock, geofencing, and check-out by default.</div>
-      <button class="btn-primary" onclick="nextScreen()">Continue</button>
-    </div>
+      <h2>Session essentials</h2>
+      <p class="sub">Key information to establish your session.</p>
 
-    <!-- Screen 2: Common Fields -->
-    <div class="screen" data-screen="2">
-      <h2>Session details</h2>
-      <p class="sub">Same for every session type.</p>
       <div class="field-label">Session Name</div>
-      <input type="text" id="sessionNameInput" class="box" value="Downtown Job Fair" placeholder="e.g. Downtown Job Fair" oninput="setSessionName(this.value)">
-
-      <div class="field-label">Managed by</div>
-      <div class="segmented" id="scopeSegmented">
-        <div class="seg-btn" id="segScopePersonal" onclick="setScope('Personal')">Personal</div>
-        <div class="seg-btn selected" id="segScopeGroup" onclick="setScope('Group')">Group</div>
-      </div>
+      <input type="text" id="sessionNameInput" class="box" value="" placeholder="e.g. Software Architecture Lab" oninput="setSessionName(this.value)">
 
       <div class="field-label">Start Date / Time</div>
       <input type="text" id="startDateInput" class="box" value="Today, 09:00 AM" placeholder="Tap to select" oninput="setStartDate(this.value)">
@@ -438,68 +410,15 @@
       <button class="btn-primary" onclick="nextScreen()">Continue</button>
     </div>
 
-    <!-- Screen 3: Configuration (Class Attendance / Workplace Attendance only) -->
-    <div class="screen" data-screen="3">
-      <h2>Configuration</h2>
-      <p class="sub" id="configSub">Device lock, geofence and dynamic QR are pre-enabled.</p>
+    <!-- Step 2: Optional Details -->
+    <div class="screen" data-screen="2">
+      <h2>Optional details</h2>
+      <p class="sub">Add capacity, photo, managers, and attendance rules.</p>
 
-      <div id="highRiskFields">
-        <div class="toggle-row" onclick="toggleField('deviceLock')">
-          <span>Device Lock</span>
-          <div class="switch on" id="swDeviceLock"><div class="knob"></div></div>
-        </div>
-        <div class="note" id="deviceLockNote" style="display:none;margin-top:-4px;margin-bottom:8px;">
-          For workplace attendance: approves pre-registered devices, or requires admin approval on first scan if roster is omitted.
-        </div>
-
-        <div class="toggle-row" onclick="toggleField('geofence')">
-          <span>Geofence</span>
-          <div class="switch on" id="swGeofence"><div class="knob"></div></div>
-        </div>
-
-        <div class="field-label">Geofence Location</div>
-        <div class="box">📍 Pick on map</div>
-
-        <div class="field-label">Radius (meters)</div>
-        <input type="text" id="radiusInput" class="box" value="150" placeholder="e.g. 150" oninput="setRadius(this.value)">
-
-        <div class="field-label">QR Mode</div>
-        <div class="toggle-row" onclick="setQrMode('Dynamic')">
-          <span>Dynamic (recommended)</span><span id="qrHighDynamic">●</span>
-        </div>
-        <div class="toggle-row" onclick="setQrMode('Static')">
-          <span>Static</span><span id="qrHighStatic">○</span>
-        </div>
-
-        <div class="field-label">Working Hours</div>
-        <input type="text" id="workingHoursInput" class="box" value="08:00 – 17:00" placeholder="08:00 – 17:00" oninput="setWorkingHours(this.value)">
-
-        <div class="field-label">Late Grace Interval</div>
-        <input type="text" id="graceIntervalInput" class="box" value="10 minutes" placeholder="10 minutes" oninput="setGraceInterval(this.value)">
-
-        <div class="toggle-row" id="checkoutRow" onclick="toggleField('checkoutRequired')">
-          <span>Check-out Required</span>
-          <div class="switch on" id="swCheckout"><div class="knob"></div></div>
-        </div>
-
-        <div class="toggle-row" onclick="toggleField('telegram')">
-          <span>Connect Telegram Account</span>
-          <div class="switch" id="swTelegram"><div class="knob"></div></div>
-        </div>
-      </div>
-
-      <button class="btn-primary" onclick="nextScreen()">Continue</button>
-    </div>
-
-    <!-- Screen 4: Capacity & Access (Expected Participants + Session Image + Access/Roster) -->
-    <div class="screen" data-screen="4">
-      <h2>Capacity & Access</h2>
-      <p class="sub" id="rosterSub">Set attendee capacity, photo, co-managers, and roster.</p>
-      
       <div class="field-label">Expected Participants (optional)</div>
-      <input type="text" id="participantsInput" class="box" value="50" placeholder="e.g. 50 (optional)" oninput="setParticipants(this.value)">
+      <input type="text" id="participantsInput" class="box" value="" placeholder="e.g. 50 (optional)" oninput="setParticipants(this.value)">
 
-      <div class="field-label" style="margin-top:12px;">Session Image (optional)</div>
+      <div class="field-label" style="margin-top:12px;">Session Photo (optional)</div>
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
         <div id="sessionImagePreview" style="width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
           <!-- Default SVG or uploaded photo -->
@@ -512,48 +431,99 @@
             </label>
             <button type="button" id="btnResetSessionImage" class="btn-secondary" style="margin:0; padding:6px 10px; font-size:11.5px; width:auto; display:none;" onclick="resetSessionImage()">Reset</button>
           </div>
-          <div style="font-size:10.5px; color:var(--muted); margin-top:4px;" id="sessionImageNote">Default icon for this type is active.</div>
+          <div style="font-size:10.5px; color:var(--muted); margin-top:4px;" id="sessionImageNote">Default session icon is active.</div>
         </div>
       </div>
 
       <div class="field-label" id="accessManagementLabel" style="margin-top:12px;">Access & Management</div>
       <button class="btn-secondary" id="primaryRosterBtn" onclick="toggleRosterPrimary()">+ Add Manager</button>
       <button class="btn-secondary" id="secondaryRosterBtn" onclick="toggleRosterSecondary()">+ Upload / Add Roster (optional)</button>
-      <div class="note" id="rosterNote">Managers get the same access as you, except deleting the session or transferring ownership. Roster upload is optional.</div>
+      <div class="note" id="rosterNote">Managers share administrative access, except deleting the session or transferring ownership. Roster upload is optional.</div>
+
+      <div class="field-label" style="margin-top:12px;">Telegram Integration</div>
+      <div class="toggle-row" onclick="toggleField('telegram')">
+        <span>Connect Telegram Account</span>
+        <div class="switch" id="swTelegram"><div class="knob"></div></div>
+      </div>
+
+      <!-- Collapsible Security & Attendance Rules Section (Collapsed by Default) -->
+      <div style="margin-top:14px;">
+        <div id="securityRulesHeader" onclick="toggleSecuritySection()" style="border:1.5px solid var(--line); border-radius:8px; padding:10px 12px; background:#fafafa; cursor:pointer; user-select:none; display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="securityChevron" style="font-size:10px; color:#555; display:inline-block; transition:transform 0.15s;">▶</span>
+            <div>
+              <div style="font-weight:bold; font-size:12.5px; color:var(--text);">Security & Attendance Rules (optional)</div>
+              <div id="securityHint" style="font-size:10.5px; color:var(--muted); margin-top:1px;">None enabled</div>
+            </div>
+          </div>
+          <span id="securityToggleAction" style="font-size:11px; color:var(--muted); font-weight:bold;">Tap to expand</span>
+        </div>
+
+        <div id="securityRulesBody" style="display:none; padding:10px 0 0;">
+          <div class="toggle-row" onclick="toggleField('deviceLock')">
+            <span>Device Lock</span>
+            <div class="switch" id="swDeviceLock"><div class="knob"></div></div>
+          </div>
+          <div class="note" style="margin-top:-4px; margin-bottom:8px; font-size:10.5px;">
+            Restricts check-in to approved devices only. Unrecognized devices require manager approval.
+          </div>
+
+          <div class="toggle-row" onclick="toggleField('geofence')">
+            <span>Geofence</span>
+            <div class="switch" id="swGeofence"><div class="knob"></div></div>
+          </div>
+
+          <div id="geofenceOptionsContainer" style="display:none; margin-bottom:8px; padding-left:2px;">
+            <div class="field-label" style="margin-top:4px;">Geofence Location</div>
+            <div class="box" style="cursor:pointer;" onclick="alert('Map picker: GPS location pinned.')">📍 Pick on map (Downtown HQ)</div>
+            <div class="field-label">Radius (meters)</div>
+            <input type="text" id="radiusInput" class="box" value="150" placeholder="e.g. 150" oninput="setRadius(this.value)">
+          </div>
+
+          <div class="field-label">Working Hours</div>
+          <input type="text" id="workingHoursInput" class="box" value="" placeholder="e.g. 08:00 – 17:00 (optional)" oninput="setWorkingHours(this.value)">
+
+          <div class="field-label">Late Grace Interval</div>
+          <input type="text" id="graceIntervalInput" class="box" value="" placeholder="e.g. 10 minutes (optional)" oninput="setGraceInterval(this.value)">
+
+          <div class="toggle-row" onclick="toggleField('checkoutRequired')">
+            <span>Check-out Required</span>
+            <div class="switch" id="swCheckout"><div class="knob"></div></div>
+          </div>
+        </div>
+      </div>
+
       <button class="btn-primary" onclick="nextScreen()">Continue</button>
     </div>
 
-    <!-- Screen 5: Review -->
-    <div class="screen" data-screen="5">
+    <!-- Step 3: Review & Create -->
+    <div class="screen" data-screen="3">
       <h2>Review & Create</h2>
-      <div class="summary-row"><span>Type</span><span id="sumType">Events</span></div>
-      <div class="summary-row"><span>Name</span><span id="sumName">Downtown Job Fair</span></div>
-      <div class="summary-row" id="sumImageRow">
-        <span>Session Image</span>
+      <p class="sub">Review configured settings before creating.</p>
+
+      <div class="summary-row" id="sumNameRow"><span>Session Name</span><span id="sumName">Untitled Session</span></div>
+      <div class="summary-row" id="sumImageRow" style="display:none;">
+        <span>Session Photo</span>
         <span style="display:flex; align-items:center; gap:6px;">
           <span id="sumImagePreview" style="display:inline-flex; align-items:center;"></span>
-          <span id="sumImageLabel">Default</span>
+          <span id="sumImageLabel">Custom Photo</span>
         </span>
       </div>
-      <div class="summary-row"><span>Managed by</span><span id="sumScope">Group</span></div>
-      <div class="summary-row"><span>Lifetime</span><span id="sumLifetime">Ongoing</span></div>
+      <div class="summary-row" id="sumStartRow"><span>Start Date</span><span id="sumStartDate">Today, 09:00 AM</span></div>
+      <div class="summary-row" id="sumLifetimeRow"><span>Lifetime</span><span id="sumLifetime">Ongoing</span></div>
       <div class="summary-row" id="sumEndDateRow" style="display:none;"><span>End Date</span><span id="sumEndDate">Today, 18:00 PM</span></div>
-      
-      <!-- Screen 4 Expected Participants summary row (Group scope only) -->
-      <div class="summary-row" id="sumParticipantsRow"><span>Expected Participants</span><span id="sumParticipants">50</span></div>
-      
-      <!-- Screen 3 High-risk summary rows (Class Attendance / Workplace Attendance only) -->
+      <div class="summary-row" id="sumParticipantsRow" style="display:none;"><span>Expected Participants</span><span id="sumParticipants">50</span></div>
+      <div class="summary-row" id="sumManagersRow" style="display:none;"><span>Managers</span><span id="sumManagers">1 Added</span></div>
+      <div class="summary-row" id="sumRosterRow" style="display:none;"><span>Roster</span><span id="sumRoster">Attached (42)</span></div>
+      <div class="summary-row" id="sumTelegramRow" style="display:none;"><span>Telegram Account</span><span id="sumTelegram">Connected</span></div>
+
+      <!-- Security & Attendance Rules Summary (only shown if set/enabled) -->
       <div class="summary-row" id="sumDeviceRow" style="display:none;"><span>Device Lock</span><span id="sumDevice">ON</span></div>
       <div class="summary-row" id="sumGeoRow" style="display:none;"><span>Geofence</span><span id="sumGeo">ON (150m)</span></div>
       <div class="summary-row" id="sumHoursRow" style="display:none;"><span>Working Hours</span><span id="sumHours">08:00 – 17:00</span></div>
+      <div class="summary-row" id="sumGraceRow" style="display:none;"><span>Grace Interval</span><span id="sumGrace">10 minutes</span></div>
       <div class="summary-row" id="sumCheckoutRow" style="display:none;"><span>Check-out</span><span id="sumCheckout">Required</span></div>
-      <div class="summary-row" id="sumTelegramRow" style="display:none;"><span>Connect Telegram Account</span><span id="sumTelegram">OFF</span></div>
-      <div class="summary-row" id="sumQrRow" style="display:none;"><span>QR Mode</span><span id="sumQr">Dynamic</span></div>
-      
-      <!-- Screen 4 Manager / Roster rows (Group scope only) -->
-      <div class="summary-row" id="sumManagersRow"><span>Managers</span><span id="sumManagers">None</span></div>
-      <div class="summary-row" id="sumRosterRow"><span>Roster</span><span id="sumRoster">None</span></div>
-      
+
       <button class="btn-primary" onclick="createSession()">Create Session</button>
     </div>
 
@@ -606,112 +576,277 @@
 let current = 1;
 
 const state = {
-  type: 'events',
-  name: 'Downtown Job Fair',
+  name: '',
   customImage: null,
-  scope: 'Group',
   startDate: 'Today, 09:00 AM',
   lifetime: 'Ongoing',
   endDate: 'Today, 18:00 PM',
-  participants: '50',
-  guestCheckIn: true,
-  deviceLock: true,
-  geofence: true,
+  participants: '',
+  deviceLock: false,
+  geofence: false,
   radius: '150',
-  qrMode: 'Static',
-  workingHours: '08:00 – 17:00',
-  graceInterval: '10 minutes',
-  checkoutRequired: true,
+  workingHours: '',
+  graceInterval: '',
+  checkoutRequired: false,
   telegram: false,
   managerAdded: false,
   rosterUploaded: false
 };
 
-function getSessionImageHtml(type, customImage, size = 40){
-  if(customImage){
-    return `<img src="${customImage}" alt="Session Image" style="width:${size}px; height:${size}px; border-radius:50%; object-fit:cover; display:block; border:1px solid #777;">`;
+function getSessionImageHtml(typeOrImage, customImageOrSize, maybeSize = 40){
+  let img = null;
+  let size = 40;
+  
+  if(typeof maybeSize === 'number' && typeof customImageOrSize === 'string'){
+    img = customImageOrSize;
+    size = maybeSize;
+  } else if(typeof customImageOrSize === 'number'){
+    size = customImageOrSize;
+    if(typeof typeOrImage === 'string' && (typeOrImage.startsWith('data:') || typeOrImage.startsWith('http'))){
+      img = typeOrImage;
+    }
+  } else if(typeof typeOrImage === 'string' && (typeOrImage.startsWith('data:') || typeOrImage.startsWith('http'))){
+    img = typeOrImage;
   }
-  const svgs = {
-    class: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><path d="M18 7L3 15l15 8 15-8-15-8z"/><path d="M9 18.2V26c0 4.5 4 6 9 6s9-1.5 9-6v-7.8"/><path d="M30 16.5V25"/></svg>`,
-    academics: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><path d="M18 7L3 15l15 8 15-8-15-8z"/><path d="M9 18.2V26c0 4.5 4 6 9 6s9-1.5 9-6v-7.8"/><path d="M30 16.5V25"/></svg>`,
-    workplace: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><rect x="7" y="6" width="22" height="25" rx="2"/><path d="M14 31V25h8v6"/><line x1="12" y1="11" x2="14" y2="11"/><line x1="17" y1="11" x2="19" y2="11"/><line x1="22" y1="11" x2="24" y2="11"/><line x1="12" y1="16" x2="14" y2="16"/><line x1="17" y1="16" x2="19" y2="16"/><line x1="22" y1="16" x2="24" y2="16"/><line x1="12" y1="21" x2="14" y2="21"/><line x1="17" y1="21" x2="19" y2="21"/><line x1="22" y1="21" x2="24" y2="21"/></svg>`,
-    work: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><rect x="7" y="6" width="22" height="25" rx="2"/><path d="M14 31V25h8v6"/><line x1="12" y1="11" x2="14" y2="11"/><line x1="17" y1="11" x2="19" y2="11"/><line x1="22" y1="11" x2="24" y2="11"/><line x1="12" y1="16" x2="14" y2="16"/><line x1="17" y1="16" x2="19" y2="16"/><line x1="22" y1="16" x2="24" y2="16"/><line x1="12" y1="21" x2="14" y2="21"/><line x1="17" y1="21" x2="19" y2="21"/><line x1="22" y1="21" x2="24" y2="21"/></svg>`,
-    events: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><rect x="6" y="9" width="24" height="18" rx="2"/><circle cx="6" cy="18" r="3" fill="#fff" stroke="#333"/><circle cx="30" cy="18" r="3" fill="#fff" stroke="#333"/><line x1="18" y1="11" x2="18" y2="25" stroke-dasharray="2 2"/></svg>`,
-    others: `<svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;"><circle cx="18" cy="18" r="13"/><polygon points="18,10 20.5,15.5 26,18 20.5,20.5 18,26 15.5,20.5 10,18 15.5,15.5" fill="#333"/></svg>`
-  };
-  return svgs[type] || svgs.others;
+
+  if(img){
+    return `<img src="${img}" alt="Session Image" style="width:${size}px; height:${size}px; border-radius:50%; object-fit:cover; display:block; border:1px solid #777;">`;
+  }
+  
+  // Default session SVG
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:#efefef; border-radius:50%; border:1px solid #777; display:block;">
+      <rect x="6" y="8" width="24" height="20" rx="3"/>
+      <line x1="6" y1="14" x2="30" y2="14"/>
+      <line x1="12" y1="4" x2="12" y2="8"/>
+      <line x1="24" y1="4" x2="24" y2="8"/>
+      <circle cx="18" cy="21" r="2.5" fill="#333"/>
+    </svg>
+  `;
 }
 
-function getSessionCoverHtml(type, customImage, height = 130){
+function getSessionCoverHtml(arg1, arg2, arg3){
+  let customImage = null;
+  let height = 130;
+  let variant = 'session'; // 'session' | 'attendance'
+
+  // Object passed in: { image, type, ... }
+  if(typeof arg1 === 'object' && arg1 !== null){
+    customImage = arg1.image || null;
+    if(typeof arg2 === 'number') height = arg2;
+    if(typeof arg3 === 'string') variant = arg3;
+  }
+  // Signature: (imageOrVariant, height, maybeVariant)
+  else if(typeof arg2 === 'number'){
+    height = arg2;
+    if(typeof arg1 === 'string' && (arg1.startsWith('data:') || arg1.startsWith('http') || arg1.includes('/') || arg1.endsWith('.png') || arg1.endsWith('.jpg'))){
+      customImage = arg1;
+    } else if(typeof arg1 === 'string' && (arg1 === 'attendance' || arg1 === 'record')){
+      variant = 'attendance';
+    } else if(typeof arg1 === 'string' && (arg1 === 'session')){
+      variant = 'session';
+    }
+    if(typeof arg3 === 'string') variant = arg3;
+  }
+  // Signature: (type, image, height)
+  else if(typeof arg3 === 'number'){
+    height = arg3;
+    if(typeof arg2 === 'string' && (arg2.startsWith('data:') || arg2.startsWith('http') || arg2.includes('/') || arg2.endsWith('.png') || arg2.endsWith('.jpg'))){
+      customImage = arg2;
+    }
+    if(arg1 === 'attendance' || arg1 === 'record' || arg1 === 'workplace' || arg1 === 'class' || arg1 === 'events' || arg1 === 'others'){
+      variant = 'attendance';
+    } else {
+      variant = 'session';
+    }
+  }
+  else if(typeof arg1 === 'string' && (arg1.startsWith('data:') || arg1.startsWith('http') || arg1.includes('/'))){
+    customImage = arg1;
+  } else if(arg1 === 'attendance'){
+    variant = 'attendance';
+  }
+
+  // 1. If custom uploaded cover photo exists
   if(customImage){
+    const actionHtml = (variant === 'session') ? `
+      <div style="position:absolute; bottom:8px; right:10px; display:flex; gap:6px; z-index:3;">
+        <label style="font-size:10px; background:rgba(25,30,36,0.78); color:#fff; padding:3px 9px; border-radius:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px; backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.25); box-shadow:0 1px 4px rgba(0,0,0,0.3);">
+          📷 Change Cover
+          <input type="file" accept="image/*" style="display:none;" onchange="handleDetailCoverUpload(event)">
+        </label>
+        <button type="button" style="font-size:10px; background:rgba(25,30,36,0.78); color:#fff; border:1px solid rgba(255,255,255,0.25); padding:3px 8px; border-radius:12px; font-weight:600; cursor:pointer; backdrop-filter:blur(4px); box-shadow:0 1px 4px rgba(0,0,0,0.3);" onclick="resetDetailCoverImage()">✕ Reset</button>
+      </div>
+    ` : `
+      <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(25,30,36,0.78); color:#fff; padding:3px 9px; border-radius:12px; font-weight:600; pointer-events:none; display:flex; align-items:center; gap:4px; backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.25); box-shadow:0 1px 4px rgba(0,0,0,0.3);">
+        ✓ Verified Record Photo
+      </span>
+    `;
+
     return `
-      <img src="${customImage}" alt="Session Cover" style="width:100%; height:${height}px; object-fit:cover; display:block;">
-      <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(0,0,0,0.65); color:#fff; padding:2px 7px; border-radius:4px; font-weight:500; pointer-events:none;">📷 Cover Photo</span>
+      <div style="width:100%; height:${height}px; position:relative; overflow:hidden;">
+        <img src="${customImage}" alt="Cover Photo" style="width:100%; height:100%; object-fit:cover; display:block;">
+        ${actionHtml}
+      </div>
     `;
   }
-  const defaultCovers = {
-    class: `
-      <svg width="100%" height="${height}" viewBox="0 0 375 130" preserveAspectRatio="xMidYMid slice" fill="none" style="display:block; background:#e8edf0;">
-        <rect width="375" height="130" fill="#e8edf0"/>
-        <line x1="0" y1="130" x2="375" y2="0" stroke="#d5dde2" stroke-width="1.5" stroke-dasharray="4 4"/>
-        <line x1="0" y1="65" x2="375" y2="65" stroke="#d5dde2" stroke-width="1" stroke-dasharray="2 2"/>
-        <circle cx="187.5" cy="52" r="30" fill="#fff" stroke="#99aab5" stroke-width="1.5"/>
-        <path d="M187.5 38L171 47.5l16.5 9.5 16.5-9.5-16.5-9.5z" fill="#444" stroke="#222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M177 52v9.5c0 4.5 4.5 5.5 10.5 5.5s10.5-1 10.5-5.5V52" fill="none" stroke="#222" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M201 50v9" stroke="#222" stroke-width="1.5"/>
-        <text x="187.5" y="104" text-anchor="middle" fill="#556b78" font-size="10.5" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" letter-spacing="0.06em">CLASS ATTENDANCE</text>
+
+  // 2. Default Cover Photo for Attendance Record (My Attendance Detail)
+  if(variant === 'attendance'){
+    return `
+      <div style="width:100%; height:${height}px; position:relative; overflow:hidden;">
+        <svg width="100%" height="${height}" viewBox="0 0 375 130" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block; background:#e8ebe4;">
+          <defs>
+            <pattern id="attGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+              <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#d5ddd3" stroke-width="0.75"/>
+            </pattern>
+            <linearGradient id="attGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#eef1eb"/>
+              <stop offset="50%" stop-color="#e2e7df"/>
+              <stop offset="100%" stop-color="#d4dad1"/>
+            </linearGradient>
+            <linearGradient id="attPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#f0f3ee"/>
+            </linearGradient>
+          </defs>
+
+          <rect width="375" height="130" fill="url(#attGrad)"/>
+          <rect width="375" height="130" fill="url(#attGrid)" opacity="0.65"/>
+
+          <!-- Left Timeline Check-in Nodes -->
+          <line x1="22" y1="65" x2="78" y2="65" stroke="#c4cdc2" stroke-width="1.2"/>
+          <circle cx="28" cy="65" r="3.5" fill="#7a8777"/>
+          <circle cx="50" cy="65" r="7" fill="#fff" stroke="#414d3e" stroke-width="1.5"/>
+          <circle cx="50" cy="65" r="3" fill="#2d372b"/>
+          <circle cx="72" cy="65" r="3.5" fill="#7a8777"/>
+
+          <!-- Right Verified Badge Nodes -->
+          <line x1="297" y1="65" x2="353" y2="65" stroke="#c4cdc2" stroke-width="1.2"/>
+          <circle cx="303" cy="65" r="3.5" fill="#7a8777"/>
+          <circle cx="325" cy="65" r="7" fill="#fff" stroke="#414d3e" stroke-width="1.5"/>
+          <polyline points="322,65 324.5,67.5 328.5,62.5" fill="none" stroke="#2d372b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="347" cy="65" r="3.5" fill="#7a8777"/>
+
+          <!-- Horizontal Datum Lines -->
+          <line x1="0" y1="14" x2="375" y2="14" stroke="#c4cdc2" stroke-width="0.8" stroke-dasharray="4 4"/>
+          <line x1="0" y1="116" x2="375" y2="116" stroke="#c4cdc2" stroke-width="0.8" stroke-dasharray="4 4"/>
+
+          <!-- Center Hallmark Badge -->
+          <circle cx="187.5" cy="46" r="32" stroke="#b0bcae" stroke-width="0.8" stroke-dasharray="2 3"/>
+          <circle cx="187.5" cy="46" r="26" fill="url(#attPillGrad)" stroke="#879684" stroke-width="1.5"/>
+
+          <!-- Verified Attendance Slip Icon -->
+          <rect x="175" y="34.5" width="25" height="23" rx="4" fill="#2d372b" stroke="#1d261b" stroke-width="1.2"/>
+          <line x1="179" y1="40" x2="191" y2="40" stroke="#cbd5c9" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="179" y1="44" x2="187" y2="44" stroke="#cbd5c9" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="193" cy="49" r="6.5" fill="#fff" stroke="#2d372b" stroke-width="1.2"/>
+          <path d="M190.5 49l1.8 1.8 3.4-3.4" fill="none" stroke="#2d372b" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Attendance Record Slip Text -->
+          <text x="187.5" y="90" text-anchor="middle" fill="#212a1f" font-size="11" font-weight="700" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" letter-spacing="0.08em">ATTENDANCE RECORD</text>
+          <text x="187.5" y="104" text-anchor="middle" fill="#586555" font-size="9" font-weight="500" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" letter-spacing="0.03em">Verified Participant Slip · Khemra Protocol</text>
+        </svg>
+
+        <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(25,30,36,0.72); color:#fff; padding:3px 9px; border-radius:12px; font-weight:600; pointer-events:none; display:flex; align-items:center; gap:4px; backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.25); box-shadow:0 1px 4px rgba(0,0,0,0.3);">
+          ✓ Verified Slip Cover
+        </span>
+      </div>
+    `;
+  }
+
+  // 3. Default Cover Photo for Session Detail (My Sessions Detail)
+  return `
+    <div style="width:100%; height:${height}px; position:relative; overflow:hidden;">
+      <svg width="100%" height="${height}" viewBox="0 0 375 130" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block; background:#e8edf2;">
+        <defs>
+          <pattern id="sessGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#d5dde5" stroke-width="0.75"/>
+          </pattern>
+          <linearGradient id="sessGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#eff2f6"/>
+            <stop offset="50%" stop-color="#e2e7ec"/>
+            <stop offset="100%" stop-color="#d4dbe3"/>
+          </linearGradient>
+          <linearGradient id="sessPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#f0f3f6"/>
+          </linearGradient>
+        </defs>
+
+        <rect width="375" height="130" fill="url(#sessGrad)"/>
+        <rect width="375" height="130" fill="url(#sessGrid)" opacity="0.6"/>
+
+        <!-- Left Architectural Elevation Wireframe -->
+        <circle cx="50" cy="65" r="30" stroke="#cbd4de" stroke-width="1" stroke-dasharray="3 3"/>
+        <circle cx="50" cy="65" r="16" stroke="#cbd4de" stroke-width="1"/>
+        <line x1="20" y1="65" x2="80" y2="65" stroke="#cbd4de" stroke-width="0.8"/>
+        <line x1="50" y1="35" x2="50" y2="95" stroke="#cbd4de" stroke-width="0.8"/>
+        <circle cx="50" cy="65" r="3.5" fill="#7d8c9b"/>
+
+        <!-- Right Geometric Radar Wireframe -->
+        <circle cx="325" cy="65" r="30" stroke="#cbd4de" stroke-width="1" stroke-dasharray="3 3"/>
+        <circle cx="325" cy="65" r="16" stroke="#cbd4de" stroke-width="1"/>
+        <line x1="295" y1="65" x2="355" y2="65" stroke="#cbd4de" stroke-width="0.8"/>
+        <line x1="325" y1="35" x2="325" y2="95" stroke="#cbd4de" stroke-width="0.8"/>
+        <circle cx="325" cy="65" r="3.5" fill="#7d8c9b"/>
+
+        <!-- Horizontal Datum Lines -->
+        <line x1="0" y1="14" x2="375" y2="14" stroke="#c8d2dc" stroke-width="0.8" stroke-dasharray="4 4"/>
+        <line x1="0" y1="116" x2="375" y2="116" stroke="#c8d2dc" stroke-width="0.8" stroke-dasharray="4 4"/>
+
+        <!-- Center Hallmark Badge -->
+        <circle cx="187.5" cy="46" r="32" stroke="#b4c0cd" stroke-width="0.8" stroke-dasharray="2 3"/>
+        <circle cx="187.5" cy="46" r="26" fill="url(#sessPillGrad)" stroke="#8e9dae" stroke-width="1.5"/>
+
+        <!-- Presentation / Session Hallmark Icon -->
+        <rect x="175" y="34.5" width="25" height="17" rx="3" fill="#2d3748" stroke="#1a202c" stroke-width="1.2"/>
+        <rect x="178.5" y="38" width="6" height="4" rx="1" fill="#fff" opacity="0.9"/>
+        <rect x="186.5" y="38" width="10.5" height="1.5" rx="0.75" fill="#cbd5e1"/>
+        <rect x="186.5" y="41" width="7" height="1.5" rx="0.75" fill="#cbd5e1"/>
+        <circle cx="181.5" cy="47" r="1.5" fill="#fff"/>
+        <circle cx="187.5" cy="47" r="1.5" fill="#fff"/>
+        <circle cx="193.5" cy="47" r="1.5" fill="#fff"/>
+        <path d="M187.5 51.5v6M182.5 57.5h10" stroke="#1a202c" stroke-width="1.4" stroke-linecap="round"/>
+
+        <!-- Session Hub Text -->
+        <text x="187.5" y="90" text-anchor="middle" fill="#242c37" font-size="11" font-weight="700" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" letter-spacing="0.08em">ATTENDANCE SESSION</text>
+        <text x="187.5" y="104" text-anchor="middle" fill="#5a6878" font-size="9" font-weight="500" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" letter-spacing="0.03em">Roster Hub &amp; Live Attendance Manager</text>
       </svg>
-      <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(0,0,0,0.5); color:#fff; padding:2px 7px; border-radius:4px; font-weight:500; pointer-events:none;">Default Cover</span>
-    `,
-    workplace: `
-      <svg width="100%" height="${height}" viewBox="0 0 375 130" preserveAspectRatio="xMidYMid slice" fill="none" style="display:block; background:#edeef0;">
-        <rect width="375" height="130" fill="#edeef0"/>
-        <line x1="40" y1="0" x2="40" y2="130" stroke="#dbdee2" stroke-width="1"/>
-        <line x1="120" y1="0" x2="120" y2="130" stroke="#dbdee2" stroke-width="1"/>
-        <line x1="255" y1="0" x2="255" y2="130" stroke="#dbdee2" stroke-width="1"/>
-        <line x1="335" y1="0" x2="335" y2="130" stroke="#dbdee2" stroke-width="1"/>
-        <circle cx="187.5" cy="52" r="30" fill="#fff" stroke="#99aab5" stroke-width="1.5"/>
-        <rect x="176" y="37" width="23" height="30" rx="2" fill="#f5f5f5" stroke="#333" stroke-width="1.5"/>
-        <line x1="181" y1="43" x2="184" y2="43" stroke="#333" stroke-width="1.5"/>
-        <line x1="190" y1="43" x2="193" y2="43" stroke="#333" stroke-width="1.5"/>
-        <line x1="181" y1="49" x2="184" y2="49" stroke="#333" stroke-width="1.5"/>
-        <line x1="190" y1="49" x2="193" y2="49" stroke="#333" stroke-width="1.5"/>
-        <line x1="181" y1="55" x2="184" y2="55" stroke="#333" stroke-width="1.5"/>
-        <line x1="190" y1="55" x2="193" y2="55" stroke="#333" stroke-width="1.5"/>
-        <rect x="184" y="61" width="7" height="6" fill="#333"/>
-        <text x="187.5" y="104" text-anchor="middle" fill="#556b78" font-size="10.5" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" letter-spacing="0.06em">WORKPLACE ATTENDANCE</text>
-      </svg>
-      <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(0,0,0,0.5); color:#fff; padding:2px 7px; border-radius:4px; font-weight:500; pointer-events:none;">Default Cover</span>
-    `,
-    events: `
-      <svg width="100%" height="${height}" viewBox="0 0 375 130" preserveAspectRatio="xMidYMid slice" fill="none" style="display:block; background:#f0edea;">
-        <rect width="375" height="130" fill="#f0edea"/>
-        <circle cx="60" cy="65" r="45" stroke="#ded6cf" stroke-width="1.5" stroke-dasharray="4 4"/>
-        <circle cx="315" cy="65" r="45" stroke="#ded6cf" stroke-width="1.5" stroke-dasharray="4 4"/>
-        <circle cx="187.5" cy="52" r="30" fill="#fff" stroke="#99aab5" stroke-width="1.5"/>
-        <rect x="174" y="40" width="27" height="22" rx="2" fill="#f5f5f5" stroke="#333" stroke-width="1.5"/>
-        <circle cx="174" cy="51" r="3" fill="#fff" stroke="#333"/>
-        <circle cx="201" cy="51" r="3" fill="#fff" stroke="#333"/>
-        <line x1="187.5" y1="42" x2="187.5" y2="60" stroke="#888" stroke-width="1.5" stroke-dasharray="2 2"/>
-        <text x="187.5" y="104" text-anchor="middle" fill="#6d5e53" font-size="10.5" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" letter-spacing="0.06em">EVENTS</text>
-      </svg>
-      <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(0,0,0,0.5); color:#fff; padding:2px 7px; border-radius:4px; font-weight:500; pointer-events:none;">Default Cover</span>
-    `,
-    others: `
-      <svg width="100%" height="${height}" viewBox="0 0 375 130" preserveAspectRatio="xMidYMid slice" fill="none" style="display:block; background:#eeeef0;">
-        <rect width="375" height="130" fill="#eeeef0"/>
-        <line x1="0" y1="0" x2="375" y2="130" stroke="#dadae0" stroke-width="1.5" stroke-dasharray="4 4"/>
-        <line x1="0" y1="130" x2="375" y2="0" stroke="#dadae0" stroke-width="1.5" stroke-dasharray="4 4"/>
-        <circle cx="187.5" cy="52" r="30" fill="#fff" stroke="#99aab5" stroke-width="1.5"/>
-        <polygon points="187.5,37 191,46 200,47 193,53 195,62 187.5,57 180,62 182,53 175,47 184,46" fill="#444" stroke="#222" stroke-width="1"/>
-        <text x="187.5" y="104" text-anchor="middle" fill="#626270" font-size="10.5" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" letter-spacing="0.06em">SESSION</text>
-      </svg>
-      <span style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(0,0,0,0.5); color:#fff; padding:2px 7px; border-radius:4px; font-weight:500; pointer-events:none;">Default Cover</span>
-    `
+
+      <label style="position:absolute; bottom:8px; right:10px; font-size:10px; background:rgba(25,30,36,0.78); color:#fff; padding:3px 9px; border-radius:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px; backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.25); box-shadow:0 1px 4px rgba(0,0,0,0.3); z-index:3;">
+        📷 Change Cover
+        <input type="file" accept="image/*" style="display:none;" onchange="handleDetailCoverUpload(event)">
+      </label>
+    </div>
+  `;
+}
+
+function handleDetailCoverUpload(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  const session = mySessionsData.find(s => s.id === activeSessionId);
+  if(!session) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    session.image = e.target.result;
+    const detailCoverContainer = document.getElementById('detailCoverContainer');
+    if(detailCoverContainer){
+      detailCoverContainer.innerHTML = getSessionCoverHtml(session.image, 130, 'session');
+    }
+    renderMySessionsList();
   };
-  defaultCovers.academics = defaultCovers.class;
-  defaultCovers.work = defaultCovers.workplace;
-  return defaultCovers[type] || defaultCovers.others;
+  reader.readAsDataURL(file);
+}
+
+function resetDetailCoverImage(){
+  const session = mySessionsData.find(s => s.id === activeSessionId);
+  if(!session) return;
+  session.image = null;
+  const detailCoverContainer = document.getElementById('detailCoverContainer');
+  if(detailCoverContainer){
+    detailCoverContainer.innerHTML = getSessionCoverHtml(null, 130, 'session');
+  }
+  renderMySessionsList();
 }
 
 function getKhemraProfileAvatarHtml(size = 42){
@@ -753,124 +888,127 @@ function updateSessionImageUI(){
   const btnReset = document.getElementById('btnResetSessionImage');
   const note = document.getElementById('sessionImageNote');
   if(preview){
-    preview.innerHTML = getSessionImageHtml(state.type, state.customImage, 48);
+    preview.innerHTML = getSessionImageHtml(state.customImage, 48);
   }
   if(btnReset){
     btnReset.style.display = state.customImage ? 'inline-block' : 'none';
   }
   if(note){
-    note.textContent = state.customImage ? 'Custom image uploaded.' : 'Default icon for this type is active.';
+    note.textContent = state.customImage ? 'Custom image uploaded.' : 'Default session icon is active.';
   }
 }
 
-function getPath(){
-  const isHighRisk = (state.type === 'class' || state.type === 'workplace' || state.type === 'academics' || state.type === 'work' || state.type === 'students' || state.type === 'employees');
-  if(isHighRisk){
-    // Class Attendance / Workplace Attendance (Personal & Group) -> Screen 2 -> Screen 3 -> Screen 4 -> Screen 5
-    return [1, 2, 3, 4, 5];
-  } else {
-    // Events / Others (Personal & Group) -> Screen 2 -> Screen 4 -> Screen 5
-    return [1, 2, 4, 5];
+let rulesCollapsed = true;
+
+function getSecurityTogglesCount(){
+  let count = 0;
+  if(state.deviceLock) count++;
+  if(state.geofence) count++;
+  if(state.checkoutRequired) count++;
+  return count;
+}
+
+function updateSecurityHint(){
+  const count = getSecurityTogglesCount();
+  const hintEl = document.getElementById('securityHint');
+  if(hintEl){
+    hintEl.textContent = count === 0 ? 'None enabled' : (count + ' enabled');
   }
+}
+
+function toggleSecuritySection(){
+  rulesCollapsed = !rulesCollapsed;
+  const body = document.getElementById('securityRulesBody');
+  const chevron = document.getElementById('securityChevron');
+  const actionText = document.getElementById('securityToggleAction');
+  if(body) body.style.display = rulesCollapsed ? 'none' : 'block';
+  if(chevron) chevron.textContent = rulesCollapsed ? '▶' : '▼';
+  if(actionText) actionText.textContent = rulesCollapsed ? 'Tap to expand' : 'Tap to collapse';
+  updateSecurityHint();
 }
 
 function renderDots(){
-  const path = getPath();
-  const total = path.length;
-  const currentIdx = path.indexOf(current);
-  const stepNumber = (currentIdx >= 0) ? (currentIdx + 1) : 1;
-  
+  const total = 3;
+  const currentIdx = current - 1;
   const d = document.getElementById('dots');
-  d.innerHTML = '';
-  for(let i=0; i<total; i++){
-    const el = document.createElement('div');
-    el.className = 'dot' + (i === currentIdx ? ' active' : '');
-    d.appendChild(el);
+  if(d){
+    d.innerHTML = '';
+    for(let i=0; i<total; i++){
+      const el = document.createElement('div');
+      el.className = 'dot' + (i === currentIdx ? ' active' : '');
+      d.appendChild(el);
+    }
   }
-  document.getElementById('stepLabel').textContent = stepNumber + ' / ' + total;
+  const stepLabel = document.getElementById('stepLabel');
+  if(stepLabel) stepLabel.textContent = current + ' / 3';
 }
 
 function showScreen(n){
-  document.querySelectorAll('.screen').forEach(s=>{
-    s.classList.toggle('active', parseInt(s.dataset.screen)===n);
-  });
   current = n;
+  document.querySelectorAll('#flowCreateSession .screen').forEach(s => {
+    s.classList.toggle('active', parseInt(s.dataset.screen) === n);
+  });
   
-  const createBackBtn = document.getElementById('createSessionBackBtn') || document.querySelector('#flowCreateSession .topbar .back');
+  const createBackBtn = document.getElementById('createSessionBackBtn');
   if(createBackBtn){
-    createBackBtn.style.visibility = (current === 1) ? 'hidden' : 'visible';
+    createBackBtn.textContent = (current === 1) ? '‹ My Session' : '‹ Back';
+    createBackBtn.style.visibility = 'visible';
   }
   
   renderDots();
-  if(n === 4) updateSessionImageUI();
-  if(n === 5) updateReview();
+  if(n === 2) updateSessionImageUI();
+  if(n === 3) updateReview();
 }
 
 function nextScreen(){
-  const path = getPath();
-  const idx = path.indexOf(current);
-  if(idx >= 0 && idx < path.length - 1){
-    showScreen(path[idx + 1]);
+  if(current < 3){
+    showScreen(current + 1);
   }
 }
 
 function prevScreen(){
-  const path = getPath();
-  const idx = path.indexOf(current);
-  if(idx > 0){
-    showScreen(path[idx - 1]);
-  }
-}
-
-function selectType(el, type){
-  document.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
-  el.classList.add('selected');
-  state.type = type;
-  
-  const isWorkplace = (type === 'workplace' || type === 'work' || type === 'employees');
-  const highRisk = (type === 'class' || type === 'academics' || type === 'students' || isWorkplace);
-  
-  // Set risk-based defaults
-  if(highRisk){
-    state.qrMode = 'Dynamic';
-    state.deviceLock = true;
-    state.geofence = true;
-    state.checkoutRequired = true;
-    document.getElementById('typeNote').textContent = isWorkplace
-      ? 'Enforces device approval, geofencing, and check-out. First scan triggers device approval (roster optional).'
-      : 'Turns on device lock, geofencing, and check-out by default (roster optional).';
-    document.getElementById('deviceLockNote').style.display = isWorkplace ? 'block' : 'none';
+  if(current > 1){
+    showScreen(current - 1);
   } else {
-    state.qrMode = 'Static';
+    closeCreateSession();
   }
-
-  document.getElementById('typeNote').style.display = highRisk ? 'block' : 'none';
-  document.getElementById('checkoutRow').style.display = highRisk ? 'flex' : 'none';
-    
-  updateSessionImageUI();
-  updateRosterButtons();
-  syncUI();
-  renderDots();
-  updateReview();
 }
 
-function setScope(val){
-  state.scope = val;
-  if(val === 'Personal'){
-    state.managerAdded = false;
-  }
-  document.getElementById('segScopePersonal').classList.toggle('selected', val === 'Personal');
-  document.getElementById('segScopeGroup').classList.toggle('selected', val === 'Group');
-  updateRosterButtons();
-  renderDots();
-  updateReview();
+function openCreateSessionFlow(){
+  state.name = '';
+  state.customImage = null;
+  state.startDate = 'Today, 09:00 AM';
+  state.lifetime = 'Ongoing';
+  state.endDate = 'Today, 18:00 PM';
+  state.participants = '';
+  state.deviceLock = false;
+  state.geofence = false;
+  state.radius = '150';
+  state.workingHours = '';
+  state.graceInterval = '';
+  state.checkoutRequired = false;
+  state.telegram = false;
+  state.managerAdded = false;
+  state.rosterUploaded = false;
+  rulesCollapsed = true;
+
+  syncCreationUI();
+  switchMainFlow('create-session');
+  showScreen(1);
+}
+
+function closeCreateSession(){
+  switchMainFlow('my-sessions');
 }
 
 function setLifetime(val){
   state.lifetime = val;
-  document.getElementById('segLifeFixed').classList.toggle('selected', val === 'Fixed Duration');
-  document.getElementById('segLifeOngoing').classList.toggle('selected', val === 'Ongoing');
-  document.getElementById('endDateContainer').style.display = (val === 'Fixed Duration') ? 'block' : 'none';
+  const segLifeFixed = document.getElementById('segLifeFixed');
+  const segLifeOngoing = document.getElementById('segLifeOngoing');
+  if(segLifeFixed) segLifeFixed.classList.toggle('selected', val === 'Fixed Duration');
+  if(segLifeOngoing) segLifeOngoing.classList.toggle('selected', val === 'Ongoing');
+  const endContainer = document.getElementById('endDateContainer');
+  if(endContainer) endContainer.style.display = (val === 'Fixed Duration') ? 'block' : 'none';
   updateReview();
 }
 
@@ -881,19 +1019,6 @@ function setParticipants(val){ state.participants = val; updateReview(); }
 function setRadius(val){ state.radius = val; updateReview(); }
 function setWorkingHours(val){ state.workingHours = val; updateReview(); }
 function setGraceInterval(val){ state.graceInterval = val; updateReview(); }
-
-function setQrMode(mode){
-  state.qrMode = mode;
-  const isStatic = (mode === 'Static');
-  
-  const highDynamic = document.getElementById('qrHighDynamic');
-  const highStatic = document.getElementById('qrHighStatic');
-  if(highDynamic && highStatic){
-    highDynamic.textContent = !isStatic ? '●' : '○';
-    highStatic.textContent = !isStatic ? '○' : '●';
-  }
-  updateReview();
-}
 
 function toggleField(key){
   state[key] = !state[key];
@@ -907,49 +1032,28 @@ function toggleField(key){
   if(swEl){
     swEl.classList.toggle('on', state[key]);
   }
+  if(key === 'geofence'){
+    const geoOpt = document.getElementById('geofenceOptionsContainer');
+    if(geoOpt) geoOpt.style.display = state.geofence ? 'block' : 'none';
+  }
+  updateSecurityHint();
   updateReview();
 }
 
 function updateRosterButtons(){
-  const isPersonal = (state.scope === 'Personal');
-  const highRisk = (state.type === 'class' || state.type === 'workplace' || state.type === 'academics' || state.type === 'work' || state.type === 'students' || state.type === 'employees');
   const primBtn = document.getElementById('primaryRosterBtn');
   const secBtn = document.getElementById('secondaryRosterBtn');
   
   if(primBtn){
-    primBtn.style.display = isPersonal ? 'none' : 'block';
+    primBtn.style.display = 'block';
     primBtn.textContent = state.managerAdded ? '✓ 1 Manager Added (alex@khemra.io)' : '+ Add Manager';
     primBtn.classList.toggle('added', state.managerAdded);
   }
   
   if(secBtn){
     secBtn.style.display = 'block';
-    const rosterLabel = highRisk ? '+ Upload Roster (optional)' : '+ Upload / Add Roster (optional)';
-    secBtn.textContent = state.rosterUploaded ? '✓ Roster Uploaded (42 members)' : rosterLabel;
+    secBtn.textContent = state.rosterUploaded ? '✓ Roster Uploaded (42 members)' : '+ Upload / Add Roster (optional)';
     secBtn.classList.toggle('added', state.rosterUploaded);
-  }
-
-  const accessLabel = document.getElementById('accessManagementLabel');
-  if(accessLabel){
-    accessLabel.textContent = isPersonal ? 'Roster (optional)' : 'Access & Management';
-  }
-
-  const rosterSub = document.getElementById('rosterSub');
-  if(rosterSub){
-    rosterSub.textContent = isPersonal 
-      ? 'Set attendee capacity, photo, and optional roster.'
-      : 'Set attendee capacity, photo, co-managers, and roster.';
-  }
-
-  const rosterNote = document.getElementById('rosterNote');
-  if(rosterNote){
-    if(isPersonal){
-      rosterNote.textContent = 'Personal session managed solely by you. Roster upload is optional — attendees can self-register or join upon scan.';
-    } else {
-      rosterNote.textContent = highRisk
-        ? 'Managers share administrative access. Roster upload is optional — attendees can self-register or be approved on first scan.'
-        : 'Managers get the same access as you, except deleting the session or transferring ownership. Roster upload is optional.';
-    }
   }
 }
 
@@ -965,13 +1069,32 @@ function toggleRosterSecondary(){
   updateReview();
 }
 
-function syncUI(){
-  document.getElementById('segScopePersonal').classList.toggle('selected', state.scope === 'Personal');
-  document.getElementById('segScopeGroup').classList.toggle('selected', state.scope === 'Group');
-  
-  document.getElementById('segLifeFixed').classList.toggle('selected', state.lifetime === 'Fixed Duration');
-  document.getElementById('segLifeOngoing').classList.toggle('selected', state.lifetime === 'Ongoing');
-  document.getElementById('endDateContainer').style.display = (state.lifetime === 'Fixed Duration') ? 'block' : 'none';
+function syncCreationUI(){
+  const nameInput = document.getElementById('sessionNameInput');
+  if(nameInput) nameInput.value = state.name;
+
+  const startInput = document.getElementById('startDateInput');
+  if(startInput) startInput.value = state.startDate;
+
+  const endInput = document.getElementById('endDateInput');
+  if(endInput) endInput.value = state.endDate;
+
+  const partInput = document.getElementById('participantsInput');
+  if(partInput) partInput.value = state.participants;
+
+  const hoursInput = document.getElementById('workingHoursInput');
+  if(hoursInput) hoursInput.value = state.workingHours;
+
+  const graceInput = document.getElementById('graceIntervalInput');
+  if(graceInput) graceInput.value = state.graceInterval;
+
+  const radiusInput = document.getElementById('radiusInput');
+  if(radiusInput) radiusInput.value = state.radius;
+
+  const fileInput = document.getElementById('sessionImageFileInput');
+  if(fileInput) fileInput.value = '';
+
+  setLifetime(state.lifetime);
 
   const switchMap = {
     deviceLock: 'swDeviceLock',
@@ -983,83 +1106,114 @@ function syncUI(){
     const el = document.getElementById(switchMap[k]);
     if(el) el.classList.toggle('on', !!state[k]);
   }
-  
-  setQrMode(state.qrMode);
+
+  const geoOpt = document.getElementById('geofenceOptionsContainer');
+  if(geoOpt) geoOpt.style.display = state.geofence ? 'block' : 'none';
+
+  const body = document.getElementById('securityRulesBody');
+  const chevron = document.getElementById('securityChevron');
+  const actionText = document.getElementById('securityToggleAction');
+  if(body) body.style.display = rulesCollapsed ? 'none' : 'block';
+  if(chevron) chevron.textContent = rulesCollapsed ? '▶' : '▼';
+  if(actionText) actionText.textContent = rulesCollapsed ? 'Tap to expand' : 'Tap to collapse';
+
+  updateSecurityHint();
   updateSessionImageUI();
   updateRosterButtons();
 }
 
 function updateReview(){
-  const isPersonal = (state.scope === 'Personal');
-  const highRisk = (state.type === 'class' || state.type === 'workplace' || state.type === 'academics' || state.type === 'work' || state.type === 'students' || state.type === 'employees');
-  
-  const typeDisplayMap = {
-    events: 'Events',
-    others: 'Others',
-    class: 'Class Attendance',
-    workplace: 'Workplace Attendance',
-    academics: 'Class Attendance',
-    work: 'Workplace Attendance',
-    students: 'Class Attendance',
-    employees: 'Workplace Attendance'
-  };
-  document.getElementById('sumType').textContent = typeDisplayMap[state.type] || (state.type.charAt(0).toUpperCase() + state.type.slice(1));
-  document.getElementById('sumName').textContent = state.name || 'Untitled Session';
-
-  // Session Image row
-  const sumImagePreview = document.getElementById('sumImagePreview');
-  const sumImageLabel = document.getElementById('sumImageLabel');
-  if(sumImagePreview){
-    sumImagePreview.innerHTML = getSessionImageHtml(state.type, state.customImage, 22);
-  }
-  if(sumImageLabel){
-    sumImageLabel.textContent = state.customImage ? 'Custom Photo' : 'Default Icon';
+  const nameVal = (state.name || '').trim();
+  const sumNameRow = document.getElementById('sumNameRow');
+  if(sumNameRow){
+    sumNameRow.style.display = nameVal ? 'flex' : 'none';
+    document.getElementById('sumName').textContent = nameVal;
   }
 
-  document.getElementById('sumScope').textContent = state.scope;
-  document.getElementById('sumLifetime').textContent = state.lifetime;
-  
-  // End Date row
-  const showEndDate = (state.lifetime === 'Fixed Duration');
+  const sumImageRow = document.getElementById('sumImageRow');
+  if(sumImageRow){
+    sumImageRow.style.display = state.customImage ? 'flex' : 'none';
+    if(state.customImage){
+      document.getElementById('sumImagePreview').innerHTML = getSessionImageHtml(state.customImage, 22);
+    }
+  }
+
+  const startVal = (state.startDate || '').trim();
+  const sumStartRow = document.getElementById('sumStartRow');
+  if(sumStartRow){
+    sumStartRow.style.display = startVal ? 'flex' : 'none';
+    document.getElementById('sumStartDate').textContent = startVal;
+  }
+
+  const sumLifetimeRow = document.getElementById('sumLifetimeRow');
+  if(sumLifetimeRow){
+    sumLifetimeRow.style.display = state.lifetime ? 'flex' : 'none';
+    document.getElementById('sumLifetime').textContent = state.lifetime;
+  }
+
+  const showEndDate = (state.lifetime === 'Fixed Duration' && (state.endDate || '').trim() !== '');
   const sumEndDateRow = document.getElementById('sumEndDateRow');
-  sumEndDateRow.style.display = showEndDate ? 'flex' : 'none';
-  if(showEndDate){
-    document.getElementById('sumEndDate').textContent = state.endDate || 'Not set';
+  if(sumEndDateRow){
+    sumEndDateRow.style.display = showEndDate ? 'flex' : 'none';
+    if(showEndDate) document.getElementById('sumEndDate').textContent = state.endDate;
   }
-  
-  // Expected Participants row (Screen 4) - Available for all sessions, optional
+
+  const partVal = (state.participants || '').trim();
   const sumParticipantsRow = document.getElementById('sumParticipantsRow');
   if(sumParticipantsRow){
-    sumParticipantsRow.style.display = 'flex';
-    document.getElementById('sumParticipants').textContent = state.participants ? state.participants : 'Optional (Flexible)';
+    sumParticipantsRow.style.display = partVal ? 'flex' : 'none';
+    if(partVal) document.getElementById('sumParticipants').textContent = partVal;
   }
-  
-  // High-risk summary rows (Class Attendance / Workplace Attendance only)
-  document.getElementById('sumDeviceRow').style.display = highRisk ? 'flex' : 'none';
-  document.getElementById('sumDevice').textContent = state.deviceLock ? 'ON' : 'OFF';
-  
-  document.getElementById('sumGeoRow').style.display = highRisk ? 'flex' : 'none';
-  document.getElementById('sumGeo').textContent = state.geofence ? ('ON (' + (state.radius || '150') + 'm)') : 'OFF';
-  
-  document.getElementById('sumHoursRow').style.display = highRisk ? 'flex' : 'none';
-  document.getElementById('sumHours').textContent = state.workingHours || '08:00 – 17:00';
-  
-  document.getElementById('sumCheckoutRow').style.display = highRisk ? 'flex' : 'none';
-  document.getElementById('sumCheckout').textContent = state.checkoutRequired ? 'Required' : 'Optional';
-  
-  document.getElementById('sumTelegramRow').style.display = highRisk ? 'flex' : 'none';
-  document.getElementById('sumTelegram').textContent = state.telegram ? 'ON' : 'OFF';
-  
-  // QR Mode row (Shown for Class Attendance / Workplace Attendance, hidden for Events / Others where it's fixed/implied)
-  document.getElementById('sumQrRow').style.display = highRisk ? 'flex' : 'none';
-  document.getElementById('sumQr').textContent = state.qrMode;
 
-  // Manager / Roster rows (Screen 4)
-  document.getElementById('sumManagersRow').style.display = isPersonal ? 'none' : 'flex';
-  document.getElementById('sumManagers').textContent = state.managerAdded ? '1 Added' : 'None';
-  
-  document.getElementById('sumRosterRow').style.display = 'flex';
-  document.getElementById('sumRoster').textContent = state.rosterUploaded ? 'Attached (42)' : 'None (Optional)';
+  const sumManagersRow = document.getElementById('sumManagersRow');
+  if(sumManagersRow){
+    sumManagersRow.style.display = state.managerAdded ? 'flex' : 'none';
+    if(state.managerAdded) document.getElementById('sumManagers').textContent = '1 Added (alex@khemra.io)';
+  }
+
+  const sumRosterRow = document.getElementById('sumRosterRow');
+  if(sumRosterRow){
+    sumRosterRow.style.display = state.rosterUploaded ? 'flex' : 'none';
+    if(state.rosterUploaded) document.getElementById('sumRoster').textContent = 'Attached (42 members)';
+  }
+
+  const sumTelegramRow = document.getElementById('sumTelegramRow');
+  if(sumTelegramRow){
+    sumTelegramRow.style.display = state.telegram ? 'flex' : 'none';
+    if(state.telegram) document.getElementById('sumTelegram').textContent = 'Connected';
+  }
+
+  const sumDeviceRow = document.getElementById('sumDeviceRow');
+  if(sumDeviceRow){
+    sumDeviceRow.style.display = state.deviceLock ? 'flex' : 'none';
+    if(state.deviceLock) document.getElementById('sumDevice').textContent = 'ON';
+  }
+
+  const sumGeoRow = document.getElementById('sumGeoRow');
+  if(sumGeoRow){
+    sumGeoRow.style.display = state.geofence ? 'flex' : 'none';
+    if(state.geofence) document.getElementById('sumGeo').textContent = 'ON (' + (state.radius || '150') + 'm)';
+  }
+
+  const hoursVal = (state.workingHours || '').trim();
+  const sumHoursRow = document.getElementById('sumHoursRow');
+  if(sumHoursRow){
+    sumHoursRow.style.display = hoursVal ? 'flex' : 'none';
+    if(hoursVal) document.getElementById('sumHours').textContent = hoursVal;
+  }
+
+  const graceVal = (state.graceInterval || '').trim();
+  const sumGraceRow = document.getElementById('sumGraceRow');
+  if(sumGraceRow){
+    sumGraceRow.style.display = graceVal ? 'flex' : 'none';
+    if(graceVal) document.getElementById('sumGrace').textContent = graceVal;
+  }
+
+  const sumCheckoutRow = document.getElementById('sumCheckoutRow');
+  if(sumCheckoutRow){
+    sumCheckoutRow.style.display = state.checkoutRequired ? 'flex' : 'none';
+    if(state.checkoutRequired) document.getElementById('sumCheckout').textContent = 'Required';
+  }
 }
 
 /* --- My Sessions Data & Logic --- */
@@ -1078,9 +1232,7 @@ let mySessionsData = [
   {
     id: 1,
     name: 'CS302: Software Architecture',
-    type: 'class',
     role: 'Owner',
-    managedBy: 'Group',
     lifetime: 'Ongoing',
     status: 'ongoing',
     participants: 65,
@@ -1096,9 +1248,7 @@ let mySessionsData = [
   {
     id: 2,
     name: 'HQ Operations - Morning Shift',
-    type: 'workplace',
     role: 'Manager',
-    managedBy: 'Group',
     lifetime: 'Ongoing',
     status: 'ongoing',
     participants: 34,
@@ -1109,14 +1259,12 @@ let mySessionsData = [
     graceInterval: '10 minutes',
     checkoutRequired: true,
     telegram: false,
-    qrMode: 'Dynamic'
+    qrMode: 'Static'
   },
   {
     id: 3,
     name: 'Downtown Tech Job Fair 2026',
-    type: 'events',
     role: 'Owner',
-    managedBy: 'Group',
     lifetime: 'Fixed Duration',
     status: 'past',
     endedOn: '22 Sep 2026',
@@ -1133,9 +1281,7 @@ let mySessionsData = [
   {
     id: 4,
     name: 'Product Design Sprint Workshop',
-    type: 'others',
     role: 'Manager',
-    managedBy: 'Group',
     lifetime: 'Ongoing',
     status: 'ongoing',
     participants: 25,
@@ -1150,18 +1296,16 @@ let mySessionsData = [
   },
   {
     id: 5,
-    name: 'Personal Study & Lab Work',
-    type: 'others',
+    name: 'Community Open House',
     role: 'Owner',
-    managedBy: 'Personal',
     lifetime: 'Fixed Duration',
     status: 'past',
     endedOn: '15 Aug 2026',
-    participants: 1,
+    participants: 45,
     deviceLock: false,
     geofence: false,
     radius: '50',
-    workingHours: 'Flexible',
+    workingHours: '10:00 – 16:00',
     graceInterval: '0 minutes',
     checkoutRequired: false,
     telegram: false,
@@ -1170,30 +1314,30 @@ let mySessionsData = [
 ];
 
 const sampleRosterData = {
-  highRisk: [
+  deviceLockOn: [
     { name: 'Sokha Chan', id: 'EMP-1021', status: 'Approved', device: 'iPhone 13' },
     { name: 'Vannak Lim', id: 'EMP-1044', status: 'Pending Device Approval', device: 'Galaxy S22' },
     { name: 'Bopha Pich', id: 'EMP-1052', status: 'Approved', device: 'Pixel 7' },
     { name: 'Dara Sam', id: 'EMP-1090', status: 'Pending Device Approval', device: 'Redmi Note 12' },
     { name: 'Chenda Meas', id: 'EMP-1115', status: 'Approved', device: 'iPhone 15' }
   ],
-  lowRisk: [
-    { name: 'Alex Johnson', id: 'Ticket #0012', time: '09:05 AM', status: 'Approved' },
-    { name: 'Maria Garcia', id: 'Ticket #0045', time: '09:12 AM', status: 'Approved' },
-    { name: 'David Kim', id: 'Ticket #0078', time: '09:21 AM', status: 'Pending Device Approval' },
-    { name: 'Sreymom Heng', id: 'Ticket #0093', time: '09:44 AM', status: 'Approved' },
-    { name: 'Kosal Chea', id: 'Guest Scan', time: '10:02 AM', status: 'Pending Device Approval' }
+  deviceLockOff: [
+    { name: 'Alex Johnson', id: 'ATT-0012', time: '09:05 AM' },
+    { name: 'Maria Garcia', id: 'ATT-0045', time: '09:12 AM' },
+    { name: 'David Kim', id: 'ATT-0078', time: '09:21 AM' },
+    { name: 'Sreymom Heng', id: 'ATT-0093', time: '09:44 AM' },
+    { name: 'Kosal Chea', id: 'ATT-0102', time: '10:02 AM' }
   ]
 };
 
 const sampleRecordsData = {
-  highRisk: [
+  withCheckout: [
     { name: 'Sokha Chan', in: '08:02 AM', out: '17:05 PM', note: 'On Time' },
     { name: 'Vannak Lim', in: '08:18 AM', out: '--', note: 'Grace (Late)' },
     { name: 'Bopha Pich', in: '07:55 AM', out: '17:00 PM', note: 'On Time' },
     { name: 'Chenda Meas', in: '08:00 AM', out: '16:58 PM', note: 'On Time' }
   ],
-  lowRisk: [
+  withoutCheckout: [
     { name: 'Alex Johnson', in: '09:05 AM', note: 'Checked In' },
     { name: 'Maria Garcia', in: '09:12 AM', note: 'Checked In' },
     { name: 'David Kim', in: '09:21 AM', note: 'Checked In' },
@@ -1392,9 +1536,13 @@ function switchMainFlow(flow){
   const isMySessions = (flow === 'my-sessions');
   const isCreateSession = (flow === 'create-session');
 
-  document.getElementById('tabMyAttendance').classList.toggle('active', isMyAttendance);
-  document.getElementById('tabMySessions').classList.toggle('active', isMySessions);
-  document.getElementById('tabCreateSession').classList.toggle('active', isCreateSession);
+  const tabAttend = document.getElementById('tabMyAttendance');
+  const tabSessions = document.getElementById('tabMySessions');
+  const switcher = document.getElementById('mainFlowSwitcher');
+
+  if(tabAttend) tabAttend.classList.toggle('active', isMyAttendance);
+  if(tabSessions) tabSessions.classList.toggle('active', isMySessions);
+  if(switcher) switcher.style.display = isCreateSession ? 'none' : 'flex';
 
   document.getElementById('flowMyAttendance').style.display = isMyAttendance ? 'block' : 'none';
   document.getElementById('flowMySessions').style.display = isMySessions ? 'block' : 'none';
@@ -1522,7 +1670,7 @@ function openAttendanceDetail(id){
 
   const attendCoverContainer = document.getElementById('attendDetailCoverContainer');
   if(attendCoverContainer){
-    attendCoverContainer.innerHTML = getSessionCoverHtml(item.type, item.image, 130);
+    attendCoverContainer.innerHTML = getSessionCoverHtml(item.image, 130, 'attendance');
   }
 
   const attendImgContainer = document.getElementById('attendDetailImageContainer');
@@ -1626,13 +1774,6 @@ function renderMySessionsList(){
   const container = document.getElementById('sessionsListContainer');
   if(!container) return;
 
-  const typeDisplayMap = {
-    class: 'Class Attendance',
-    workplace: 'Workplace Attendance',
-    events: 'Events',
-    others: 'Others'
-  };
-
   const ongoingList = mySessionsData.filter(s => s.status !== 'past');
   const pastList = mySessionsData.filter(s => s.status === 'past');
 
@@ -1643,17 +1784,17 @@ function renderMySessionsList(){
     const badgeClass = isOwner ? 'badge-owner' : 'badge-manager';
     const metaInfo = isPast && s.endedOn
       ? ('Ended ' + s.endedOn)
-      : ((s.managedBy || 'Group') + ' · ' + (s.lifetime || 'Ongoing'));
+      : (s.lifetime || 'Ongoing');
 
     const statusBadge = isPast
       ? `<span class="badge" style="background:#eee; color:#666; border:1px dashed #999; margin-right:4px;">Ended</span>`
       : '';
-    const timeDisplay = s.workingHours || (s.type === 'events' ? '09:00 – 18:00' : '08:00 – 17:00');
+    const timeDisplay = s.workingHours || '08:00 – 17:00';
 
     return `
       <div class="session-card" style="${isPast ? 'opacity:0.85;' : ''} display:flex; align-items:center; gap:12px;" onclick="openSessionDetail(${s.id})">
         <div style="flex-shrink:0;">
-          ${getSessionImageHtml(s.type, s.image, 42)}
+          ${getSessionImageHtml(s.image, 42)}
         </div>
         <div style="flex:1; min-width:0;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
@@ -1675,8 +1816,9 @@ function renderMySessionsList(){
   // If filter is all or ongoing
   if(sessionFilter === 'all' || sessionFilter === 'ongoing'){
     html += `
-      <div style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:6px 0 8px; display:flex; justify-content:space-between;">
+      <div style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:6px 0 8px; display:flex; justify-content:space-between; align-items:center;">
         <span>Ongoing Sessions (${ongoingList.length})</span>
+        <button class="btn-primary" style="margin:0; width:auto; padding:4px 10px; font-size:11px; border-radius:14px; text-transform:none; letter-spacing:normal; cursor:pointer; font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.15);" onclick="openCreateSessionFlow()">+ New Session</button>
       </div>
     `;
     if(ongoingList.length === 0){
@@ -1688,9 +1830,13 @@ function renderMySessionsList(){
 
   // If filter is all or past
   if(sessionFilter === 'all' || sessionFilter === 'past'){
+    const showNewBtnOnPast = (sessionFilter === 'past');
     html += `
-      <div style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:${sessionFilter === 'all' ? '18px' : '6px'} 0 8px; display:flex; justify-content:space-between;">
+      <div style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:${sessionFilter === 'all' ? '18px' : '6px'} 0 8px; display:flex; justify-content:space-between; align-items:center;">
         <span>Past Sessions (${pastList.length})</span>
+        ${showNewBtnOnPast ? `
+          <button class="btn-primary" style="margin:0; width:auto; padding:4px 10px; font-size:11px; border-radius:14px; text-transform:none; letter-spacing:normal; cursor:pointer; font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.15);" onclick="openCreateSessionFlow()">+ New Session</button>
+        ` : ''}
       </div>
     `;
     if(pastList.length === 0){
@@ -1699,10 +1845,6 @@ function renderMySessionsList(){
       pastList.forEach(s => { html += renderCard(s, true); });
     }
   }
-
-  html += `
-    <button class="btn-secondary" style="border-style:dashed; margin-top:14px;" onclick="switchMainFlow('create-session')">+ New Session</button>
-  `;
 
   container.innerHTML = html;
 }
@@ -1718,21 +1860,13 @@ function openSessionDetail(id){
   const sessionBack = document.querySelector('#mySessionDetailView .back');
   if(sessionBack) sessionBack.style.visibility = 'visible';
 
-  const isHighRisk = (session.type === 'class' || session.type === 'workplace');
-  const typeDisplayMap = {
-    class: 'Class Attendance',
-    workplace: 'Workplace Attendance',
-    events: 'Events',
-    others: 'Others'
-  };
-  const typeLabel = typeDisplayMap[session.type] || session.type;
-  const sessionTime = session.workingHours || (session.type === 'events' ? '09:00 – 18:00' : '08:00 – 17:00');
+  const sessionTime = session.workingHours || '08:00 – 17:00';
 
   document.getElementById('detailName').textContent = session.name;
 
   const detailCoverContainer = document.getElementById('detailCoverContainer');
   if(detailCoverContainer){
-    detailCoverContainer.innerHTML = getSessionCoverHtml(session.type, session.image, 130);
+    detailCoverContainer.innerHTML = getSessionCoverHtml(session.image, 130, 'session');
   }
 
   const detailImgContainer = document.getElementById('detailImageContainer');
@@ -1746,7 +1880,7 @@ function openSessionDetail(id){
       <span style="font-size:9.5px; font-weight:bold; color:#444; background:#e8e8e8; padding:1px 5px; border-radius:4px; border:1px solid #ccc; letter-spacing:0.02em;">Khemra Profile</span>
     </div>
     <div style="font-size:11px; color:var(--muted); line-height:1.35;">
-      ${typeLabel} · ${sessionTime} · ${(session.managedBy || 'Group')} · ${(session.lifetime || 'Ongoing')}
+      ${sessionTime} · ${(session.lifetime || 'Ongoing')}
     </div>
   `;
 
@@ -1755,13 +1889,8 @@ function openSessionDetail(id){
   badgeEl.textContent = session.role;
   document.getElementById('detailNavRole').textContent = session.role;
 
-  // Set up QR tab
-  const isDynamic = (session.qrMode === 'Dynamic' || isHighRisk);
-  document.getElementById('qrCardTitle').textContent = isDynamic ? 'Dynamic QR Code' : 'Static QR Code';
-  document.getElementById('qrCardSub').textContent = isDynamic ? 'Refreshes every 30s' : 'Permanent scan code';
-  document.getElementById('qrDynamicBlock').style.display = isDynamic ? 'block' : 'none';
-  document.getElementById('qrStaticBlock').style.display = !isDynamic ? 'block' : 'none';
-  document.getElementById('qrRegenStatus').textContent = 'Single-use rotating token prevents screenshot sharing.';
+  // Set up QR tab (Default Static unless set to Dynamic)
+  setDetailTabQrMode(session.qrMode || 'Static');
 
   // Reset roster filter and selection mode
   rosterFilter = 'All';
@@ -1771,27 +1900,20 @@ function openSessionDetail(id){
     if(el) el.classList.toggle('active', f === 'All');
   });
 
-  // Set up Roster tab
-  renderDetailRoster(isHighRisk);
+  // Set up Roster tab (driven by deviceLock toggle)
+  renderDetailRoster(!!session.deviceLock);
 
-  // Set up Records tab
-  renderDetailRecords(isHighRisk);
+  // Set up Records tab (driven by checkoutRequired toggle)
+  renderDetailRecords(!!session.checkoutRequired);
 
   // Set up Settings tab
   document.getElementById('settingDetailName').value = session.name;
-  document.getElementById('settingDetailHighRiskGroup').style.display = isHighRisk ? 'block' : 'none';
-  if(isHighRisk){
-    document.getElementById('swDetailDeviceLock').classList.toggle('on', !!session.deviceLock);
-    document.getElementById('swDetailGeofence').classList.toggle('on', !!session.geofence);
-    document.getElementById('settingDetailRadius').value = session.radius || '150';
-    document.getElementById('settingDetailWorkingHours').value = session.workingHours || '08:00 – 17:00';
-    document.getElementById('settingDetailGraceInterval').value = session.graceInterval || '10 minutes';
-    document.getElementById('swDetailCheckout').classList.toggle('on', !!session.checkoutRequired);
-
-    const isDyn = (session.qrMode !== 'Static');
-    document.getElementById('qrDetailDynamic').textContent = isDyn ? '●' : '○';
-    document.getElementById('qrDetailStatic').textContent = isDyn ? '○' : '●';
-  }
+  document.getElementById('swDetailDeviceLock').classList.toggle('on', !!session.deviceLock);
+  document.getElementById('swDetailGeofence').classList.toggle('on', !!session.geofence);
+  document.getElementById('settingDetailRadius').value = session.radius || '150';
+  document.getElementById('settingDetailWorkingHours').value = session.workingHours || '08:00 – 17:00';
+  document.getElementById('settingDetailGraceInterval').value = session.graceInterval || '10 minutes';
+  document.getElementById('swDetailCheckout').classList.toggle('on', !!session.checkoutRequired);
   document.getElementById('swDetailTelegram').classList.toggle('on', !!session.telegram);
 
   // Role-based actions display
@@ -1830,15 +1952,44 @@ function switchDetailSubtab(tabName){
   if(target) target.classList.add('active');
 }
 
-/* Roster Filter & Bulk Selection Logic */
+/* Detail Tab QR Mode Control (Static | Dynamic) */
+function setDetailTabQrMode(mode){
+  const session = mySessionsData.find(s => s.id === activeSessionId);
+  if(session){
+    session.qrMode = mode;
+  }
+  const isStatic = (mode === 'Static');
+  const segStatic = document.getElementById('segDetailQrStatic');
+  const segDynamic = document.getElementById('segDetailQrDynamic');
+  if(segStatic) segStatic.classList.toggle('selected', isStatic);
+  if(segDynamic) segDynamic.classList.toggle('selected', !isStatic);
+
+  const qrTitle = document.getElementById('qrCardTitle');
+  const qrSub = document.getElementById('qrCardSub');
+  const dynamicBlock = document.getElementById('qrDynamicBlock');
+  const staticBlock = document.getElementById('qrStaticBlock');
+
+  if(qrTitle) qrTitle.textContent = isStatic ? 'Static QR Code' : 'Dynamic QR Code';
+  if(qrSub) qrSub.textContent = isStatic ? 'Permanent scan code' : 'Rotating dynamic token (valid 30s)';
+  if(dynamicBlock) dynamicBlock.style.display = isStatic ? 'none' : 'block';
+  if(staticBlock) staticBlock.style.display = isStatic ? 'block' : 'none';
+}
+
+/* Roster Filter & Bulk Selection Logic (Driven by session.deviceLock) */
 let rosterFilter = 'All';
 let rosterSelectionMode = false;
 let rosterSelectedIds = new Set();
 
-function isCurrentSessionHighRisk(){
-  if(!activeSessionId) return true;
+function hasActiveDeviceLock(){
+  if(!activeSessionId) return false;
   const s = mySessionsData.find(x => x.id === activeSessionId);
-  return s ? (s.type === 'class' || s.type === 'workplace') : true;
+  return s ? !!s.deviceLock : false;
+}
+
+function hasActiveCheckoutRequired(){
+  if(!activeSessionId) return false;
+  const s = mySessionsData.find(x => x.id === activeSessionId);
+  return s ? !!s.checkoutRequired : false;
 }
 
 function setRosterFilter(filter){
@@ -1849,10 +2000,11 @@ function setRosterFilter(filter){
   });
   updateSelectAllCheckboxState();
   updateRosterActionBar();
-  renderDetailRoster(isCurrentSessionHighRisk());
+  renderDetailRoster(hasActiveDeviceLock());
 }
 
 function toggleRosterSelectMode(){
+  if(!hasActiveDeviceLock()) return;
   rosterSelectionMode = !rosterSelectionMode;
   rosterSelectedIds.clear();
   const btn = document.getElementById('btnRosterSelectMode');
@@ -1865,7 +2017,7 @@ function toggleRosterSelectMode(){
     selectAllContainer.style.display = rosterSelectionMode ? 'flex' : 'none';
   }
   updateRosterActionBar();
-  renderDetailRoster(isCurrentSessionHighRisk());
+  renderDetailRoster(hasActiveDeviceLock());
 }
 
 function resetRosterSelectMode(){
@@ -1908,8 +2060,12 @@ function updateRosterActionBar(){
 }
 
 function updateSelectAllCheckboxState(){
-  const isHighRisk = isCurrentSessionHighRisk();
-  const allItems = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
+  if(!hasActiveDeviceLock()){
+    const selectAllCb = document.getElementById('rosterSelectAllCheckbox');
+    if(selectAllCb) selectAllCb.checked = false;
+    return;
+  }
+  const allItems = sampleRosterData.deviceLockOn;
   const visibleIndices = allItems
     .map((item, originalIndex) => ({ item, originalIndex }))
     .filter(({ item }) => {
@@ -1928,8 +2084,8 @@ function updateSelectAllCheckboxState(){
 }
 
 function toggleRosterSelectAll(isChecked){
-  const isHighRisk = isCurrentSessionHighRisk();
-  const allItems = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
+  if(!hasActiveDeviceLock()) return;
+  const allItems = sampleRosterData.deviceLockOn;
   const visibleIndices = allItems
     .map((item, originalIndex) => ({ item, originalIndex }))
     .filter(({ item }) => {
@@ -1945,10 +2101,11 @@ function toggleRosterSelectAll(isChecked){
     visibleIndices.forEach(idx => rosterSelectedIds.delete(idx));
   }
   updateRosterActionBar();
-  renderDetailRoster(isHighRisk);
+  renderDetailRoster(true);
 }
 
 function toggleRosterItemSelection(idx, isChecked){
+  if(!hasActiveDeviceLock()) return;
   if(isChecked){
     rosterSelectedIds.add(idx);
   } else {
@@ -1956,23 +2113,23 @@ function toggleRosterItemSelection(idx, isChecked){
   }
   updateRosterActionBar();
   updateSelectAllCheckboxState();
-  renderDetailRoster(isCurrentSessionHighRisk());
+  renderDetailRoster(true);
 }
 
 function handleRosterRowClick(e, idx){
-  if(!rosterSelectionMode) return;
+  if(!rosterSelectionMode || !hasActiveDeviceLock()) return;
   if(e.target && e.target.type === 'checkbox') return;
   const isSelected = rosterSelectedIds.has(idx);
   toggleRosterItemSelection(idx, !isSelected);
 }
 
 function bulkApproveSelected(){
+  if(!hasActiveDeviceLock()) return;
   const count = rosterSelectedIds.size;
   if(count === 0) return;
   if(!confirm('Approve ' + count + ' selected device' + (count > 1 ? 's' : '') + '?')) return;
 
-  const isHighRisk = isCurrentSessionHighRisk();
-  const data = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
+  const data = sampleRosterData.deviceLockOn;
   rosterSelectedIds.forEach(idx => {
     if(data[idx]){
       data[idx].status = 'Approved';
@@ -1985,12 +2142,12 @@ function bulkApproveSelected(){
 }
 
 function bulkRejectSelected(){
+  if(!hasActiveDeviceLock()) return;
   const count = rosterSelectedIds.size;
   if(count === 0) return;
   if(!confirm('Reject ' + count + ' selected device' + (count > 1 ? 's' : '') + '?')) return;
 
-  const isHighRisk = isCurrentSessionHighRisk();
-  const data = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
+  const data = sampleRosterData.deviceLockOn;
   rosterSelectedIds.forEach(idx => {
     if(data[idx]){
       data[idx].status = 'Rejected';
@@ -2003,53 +2160,53 @@ function bulkRejectSelected(){
 }
 
 function approveDevice(idx){
-  const isHighRisk = isCurrentSessionHighRisk();
-  const data = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
+  const data = sampleRosterData.deviceLockOn;
   if(data[idx]){
     data[idx].status = 'Approved';
-    renderDetailRoster(isHighRisk);
+    renderDetailRoster(hasActiveDeviceLock());
   }
 }
 
-function renderDetailRoster(isHighRisk){
+function renderDetailRoster(hasDeviceLock){
   const container = document.getElementById('rosterListContainer');
   const heading = document.getElementById('rosterPaneHeading');
   const sub = document.getElementById('rosterPaneSub');
+  const selectBtn = document.getElementById('btnRosterSelectMode');
+  const chipsContainer = document.querySelector('.roster-filter-chips');
+  const selectAllContainer = document.getElementById('rosterSelectAllContainer');
 
-  if(isHighRisk){
+  if(hasDeviceLock){
     heading.textContent = 'Device & Member Roster';
     sub.textContent = 'Enforces registered device approvals';
-  } else {
-    heading.textContent = 'Attendee List';
-    sub.textContent = 'Recent check-ins';
-  }
+    if(selectBtn) selectBtn.style.display = 'inline-block';
+    if(chipsContainer) chipsContainer.style.display = 'flex';
+    if(selectAllContainer) selectAllContainer.style.display = rosterSelectionMode ? 'flex' : 'none';
 
-  const allItems = isHighRisk ? sampleRosterData.highRisk : sampleRosterData.lowRisk;
-  const indexedItems = allItems.map((item, originalIndex) => ({ item, originalIndex }));
-  const visibleItems = indexedItems.filter(({ item }) => {
-    if(rosterFilter === 'Pending') return item.status && item.status.toLowerCase().includes('pending');
-    if(rosterFilter === 'Approved') return item.status === 'Approved';
-    return true;
-  });
+    const allItems = sampleRosterData.deviceLockOn;
+    const indexedItems = allItems.map((item, originalIndex) => ({ item, originalIndex }));
+    const visibleItems = indexedItems.filter(({ item }) => {
+      if(rosterFilter === 'Pending') return item.status && item.status.toLowerCase().includes('pending');
+      if(rosterFilter === 'Approved') return item.status === 'Approved';
+      return true;
+    });
 
-  updateSelectAllCheckboxState();
+    updateSelectAllCheckboxState();
 
-  if(visibleItems.length === 0){
-    container.innerHTML = `<div class="note" style="margin-top:10px; text-align:center;">No ${rosterFilter.toLowerCase()} members found.</div>`;
-    return;
-  }
+    if(visibleItems.length === 0){
+      container.innerHTML = `<div class="note" style="margin-top:10px; text-align:center;">No ${rosterFilter.toLowerCase()} members found.</div>`;
+      return;
+    }
 
-  let html = '';
-  visibleItems.forEach(({ item, originalIndex }) => {
-    const isSelected = rosterSelectedIds.has(originalIndex);
-    let actionColHtml = '';
+    let html = '';
+    visibleItems.forEach(({ item, originalIndex }) => {
+      const isSelected = rosterSelectedIds.has(originalIndex);
+      let actionColHtml = '';
 
-    if(rosterSelectionMode){
-      actionColHtml = `
-        <input type="checkbox" style="width:16px; height:16px; cursor:pointer;" ${isSelected ? 'checked' : ''} onchange="toggleRosterItemSelection(${originalIndex}, this.checked)">
-      `;
-    } else {
-      if(isHighRisk){
+      if(rosterSelectionMode){
+        actionColHtml = `
+          <input type="checkbox" style="width:16px; height:16px; cursor:pointer;" ${isSelected ? 'checked' : ''} onchange="toggleRosterItemSelection(${originalIndex}, this.checked)">
+        `;
+      } else {
         if(item.status === 'Approved'){
           actionColHtml = `<span class="badge-approved">Approved</span>`;
         } else if(item.status === 'Rejected'){
@@ -2057,42 +2214,62 @@ function renderDetailRoster(isHighRisk){
         } else {
           actionColHtml = `<span class="badge-pending" onclick="approveDevice(${originalIndex})">Approve Device</span>`;
         }
-      } else {
-        if(item.status === 'Pending Device Approval'){
-          actionColHtml = `<span class="badge-pending" onclick="approveDevice(${originalIndex})">Approve</span>`;
-        } else {
-          actionColHtml = `<span style="font-size:11px; color:var(--muted);">${item.time || 'Approved'}</span>`;
-        }
       }
-    }
 
-    const subDetail = isHighRisk ? `${item.id} · ${item.device || 'Registered Device'}` : item.id;
-    const rowBg = (rosterSelectionMode && isSelected) ? 'background:#f0f0f0; border-radius:4px; padding-left:4px; padding-right:4px;' : '';
+      const subDetail = `${item.id} · ${item.device || 'Registered Device'}`;
+      const rowBg = (rosterSelectionMode && isSelected) ? 'background:#f0f0f0; border-radius:4px; padding-left:4px; padding-right:4px;' : '';
 
-    html += `
-      <div class="roster-row" style="${rowBg} ${rosterSelectionMode ? 'cursor:pointer;' : ''}" onclick="handleRosterRowClick(event, ${originalIndex})">
-        <div>
-          <div style="font-weight:bold; color:var(--text);">${item.name}</div>
-          <div style="font-size:11px; color:var(--muted);">${subDetail}</div>
+      html += `
+        <div class="roster-row" style="${rowBg} ${rosterSelectionMode ? 'cursor:pointer;' : ''}" onclick="handleRosterRowClick(event, ${originalIndex})">
+          <div>
+            <div style="font-weight:bold; color:var(--text);">${item.name}</div>
+            <div style="font-size:11px; color:var(--muted);">${subDetail}</div>
+          </div>
+          <div style="display:flex; align-items:center;" onclick="event.stopPropagation();">
+            ${actionColHtml}
+          </div>
         </div>
-        <div style="display:flex; align-items:center;" onclick="event.stopPropagation();">
-          ${actionColHtml}
-        </div>
-      </div>
-    `;
-  });
+      `;
+    });
 
-  container.innerHTML = html;
+    container.innerHTML = html;
+  } else {
+    // Device Lock is OFF: plain attendee list with check-in times
+    heading.textContent = 'Attendee List';
+    sub.textContent = 'Recent check-ins';
+    resetRosterSelectMode();
+    if(selectBtn) selectBtn.style.display = 'none';
+    if(chipsContainer) chipsContainer.style.display = 'none';
+    if(selectAllContainer) selectAllContainer.style.display = 'none';
+
+    const allItems = sampleRosterData.deviceLockOff;
+    let html = '';
+    allItems.forEach(item => {
+      html += `
+        <div class="roster-row">
+          <div>
+            <div style="font-weight:bold; color:var(--text);">${item.name}</div>
+            <div style="font-size:11px; color:var(--muted);">${item.id}</div>
+          </div>
+          <div style="display:flex; align-items:center;">
+            <span style="font-size:11.5px; color:var(--muted);">${item.time || '09:05 AM'}</span>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
 }
 
-function renderDetailRecords(isHighRisk){
+function renderDetailRecords(hasCheckoutRequired){
   const container = document.getElementById('recordsListContainer');
   const countSub = document.getElementById('recordsCountSub');
 
-  if(isHighRisk){
+  if(hasCheckoutRequired){
     countSub.textContent = 'Today: 4 Present · 1 Late';
     let html = '';
-    sampleRecordsData.highRisk.forEach(r => {
+    sampleRecordsData.withCheckout.forEach(r => {
       html += `
         <div class="record-row">
           <div>
@@ -2107,7 +2284,7 @@ function renderDetailRecords(isHighRisk){
   } else {
     countSub.textContent = 'Total Scans: 5 Attendees';
     let html = '';
-    sampleRecordsData.lowRisk.forEach(r => {
+    sampleRecordsData.withoutCheckout.forEach(r => {
       html += `
         <div class="record-row">
           <div>
@@ -2146,29 +2323,31 @@ function toggleDetailSetting(key){
   };
   const el = document.getElementById(switchMap[key]);
   if(el) el.classList.toggle('on', !!session[key]);
+
+  if(key === 'deviceLock'){
+    renderDetailRoster(!!session.deviceLock);
+  }
+  if(key === 'checkoutRequired'){
+    renderDetailRecords(!!session.checkoutRequired);
+  }
 }
 
 function setDetailQrMode(mode){
-  const session = mySessionsData.find(s => s.id === activeSessionId);
-  if(!session) return;
-  session.qrMode = mode;
-  const isStatic = (mode === 'Static');
-  document.getElementById('qrDetailDynamic').textContent = !isStatic ? '●' : '○';
-  document.getElementById('qrDetailStatic').textContent = !isStatic ? '○' : '●';
+  setDetailTabQrMode(mode);
 }
 
 function saveDetailSettings(){
   const session = mySessionsData.find(s => s.id === activeSessionId);
   if(!session) return;
   session.name = document.getElementById('settingDetailName').value || session.name;
-  const isHighRisk = (session.type === 'class' || session.type === 'workplace');
-  if(isHighRisk){
-    session.radius = document.getElementById('settingDetailRadius').value;
-    session.workingHours = document.getElementById('settingDetailWorkingHours').value;
-    session.graceInterval = document.getElementById('settingDetailGraceInterval').value;
-  }
+  session.radius = document.getElementById('settingDetailRadius').value;
+  session.workingHours = document.getElementById('settingDetailWorkingHours').value;
+  session.graceInterval = document.getElementById('settingDetailGraceInterval').value;
+  
   document.getElementById('detailName').textContent = session.name;
   renderMySessionsList();
+  renderDetailRoster(!!session.deviceLock);
+  renderDetailRecords(!!session.checkoutRequired);
   alert('Settings saved successfully!');
 }
 
@@ -2186,10 +2365,8 @@ function createSession(){
   const newSession = {
     id: Date.now(),
     name: state.name || 'Untitled Session',
-    type: state.type,
     image: state.customImage || null,
     role: 'Owner',
-    managedBy: state.scope,
     lifetime: state.lifetime,
     status: 'ongoing',
     participants: state.participants || 'Flexible',
@@ -2200,17 +2377,17 @@ function createSession(){
     graceInterval: state.graceInterval,
     checkoutRequired: state.checkoutRequired,
     telegram: state.telegram,
-    qrMode: state.qrMode
+    qrMode: 'Static'
   };
   mySessionsData.unshift(newSession);
   alert('Session "' + newSession.name + '" created successfully!');
-  closeSessionDetail();
+  closeCreateSession();
   renderMySessionsList();
-  switchMainFlow('my-sessions');
+  openSessionDetail(newSession.id);
 }
 
 renderDots();
-syncUI();
+syncCreationUI();
 updateReview();
 switchMainFlow('my-attendance');
 </script>
