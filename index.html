@@ -84,20 +84,21 @@
   .chip:hover{border-color:#555;color:var(--text);}
   .chip.active{background:#333;color:#fff;border-color:#333;}
 
-  /* Persistent Scan FAB - Circular & Centered (Icon Only) */
-  .scan-fab{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:54px;height:54px;border-radius:50%;z-index:90;display:flex;align-items:center;justify-content:center;background:#222;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,0.3);cursor:pointer;border:2px solid #555;user-select:none;transition:transform 0.1s, background 0.15s;}
-  .scan-fab:active{transform:translateX(-50%) scale(0.94);background:#000;}
+  /* Mobile Bottom Navigation Bar (Two Destinations) */
+  .bottom-nav{position:absolute;bottom:0;left:0;width:100%;height:56px;background:#fff;border-top:1.5px solid var(--line);display:flex;align-items:center;justify-content:space-around;z-index:80;user-select:none;box-shadow:0 -2px 10px rgba(0,0,0,0.06);}
+  .bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;cursor:pointer;color:var(--muted);transition:color 0.15s;font-size:11px;font-weight:600;gap:3px;}
+  .bottom-nav-item.active{color:#222;font-weight:bold;}
+  .bottom-nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .bottom-nav-item.active svg{stroke-width:2.3;}
+
+  /* Floating Action Button for Create Session (Bottom Right, My Sessions Tab) */
+  .create-fab{position:absolute;bottom:70px;right:18px;width:50px;height:50px;border-radius:50%;background:#222;color:#fff;display:none;align-items:center;justify-content:center;font-size:26px;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,0.3);cursor:pointer;border:none;z-index:85;transition:transform 0.15s, background 0.15s;user-select:none;}
+  .create-fab:active{transform:scale(0.94);background:#000;}
 </style>
 </head>
 <body>
 <div class="phone">
   <div class="statusbar"></div>
-
-  <!-- Top-level Flow Switcher (Two Tabs) -->
-  <div class="flow-switcher" id="mainFlowSwitcher">
-    <button class="flow-tab active" id="tabMyAttendance" onclick="switchMainFlow('my-attendance')">My Attendance</button>
-    <button class="flow-tab" id="tabMySessions" onclick="switchMainFlow('my-sessions')">My Session</button>
-  </div>
 
   <!-- FLOW 1: My Attendance (List + Read-only Detail) -->
   <div id="flowMyAttendance">
@@ -108,12 +109,18 @@
           <h2 style="margin:0; font-size:16px;">My Attendance</h2>
           <p class="sub" style="margin:2px 0 0; font-size:11.5px;">Your personal check-in history</p>
         </div>
-        <select id="attendanceStatusFilter" class="box" style="width:auto; padding:5px 8px; font-size:11px; border-radius:14px; background:#fff; cursor:pointer; font-weight:bold; outline:none;" onchange="setAttendanceFilter(this.value)">
-          <option value="all">Filter: All</option>
-          <option value="ongoing">Ongoing</option>
-          <option value="past">Past</option>
-          <option value="late">Late</option>
-        </select>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <!-- Unified App QR Scanner simulation button -->
+          <button onclick="openScannerOverlay()" title="Scan QR Code (Unified App Scanner)" style="background:#222; color:#fff; border:none; border-radius:14px; padding:5px 9px; font-size:11px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:4px;">
+            <span style="font-size:12px; line-height:1;">⛶</span> Scan
+          </button>
+          <select id="attendanceStatusFilter" class="box" style="width:auto; padding:5px 8px; font-size:11px; border-radius:14px; background:#fff; cursor:pointer; font-weight:bold; outline:none;" onchange="setAttendanceFilter(this.value)">
+            <option value="all">Filter: All</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="past">Past</option>
+            <option value="late">Late</option>
+          </select>
+        </div>
       </div>
 
       <div style="padding: 4px 16px 75px;" id="attendanceListContainer">
@@ -538,10 +545,22 @@
     </div>
   </div>
 
-  <!-- Persistent Scan to Check-in FAB (Circular & Centered across all tabs, Icon Only) -->
-  <div class="scan-fab" id="scanFabBtn" onclick="openScannerOverlay()" title="Scan to Check-in">
-    <span style="font-size:24px; line-height:1;">⛶</span>
+  <!-- Mobile Bottom Navigation Bar (Two Destinations) -->
+  <div class="bottom-nav" id="bottomNav">
+    <div class="bottom-nav-item active" id="tabMyAttendance" onclick="switchMainFlow('my-attendance')">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="m9 14 2 2 4-4"/></svg>
+      <span>My Attendance</span>
+    </div>
+    <div class="bottom-nav-item" id="tabMySessions" onclick="switchMainFlow('my-sessions')">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>My Sessions</span>
+    </div>
   </div>
+
+  <!-- Floating Action Button for Create Session (Bottom Right, My Sessions Tab) -->
+  <button class="create-fab" id="createSessionFabBtn" onclick="openCreateSessionFlow()" title="Create New Session">
+    <span>+</span>
+  </button>
 
   <!-- Scanner Screen Overlay -->
   <div id="scannerOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:#fff; z-index:200; overflow-y:auto; box-sizing:border-box;">
@@ -1530,6 +1549,26 @@ let myAttendanceData = [
   }
 ];
 
+function updateBottomNavAndFabVisibility(){
+  const bottomNav = document.getElementById('bottomNav');
+  const createFab = document.getElementById('createSessionFabBtn');
+  const attendDetail = document.getElementById('myAttendanceDetailView');
+  const sessionDetail = document.getElementById('mySessionDetailView');
+  const scannerEl = document.getElementById('scannerOverlay');
+
+  const isAttendDetail = attendDetail && attendDetail.style.display === 'block';
+  const isSessionDetail = sessionDetail && sessionDetail.style.display === 'block';
+  const isCreateFlow = currentFlow === 'create-session';
+  const isScannerOpen = scannerEl && scannerEl.style.display === 'block';
+  const isRosterSelection = rosterSelectionMode && rosterSelectedIds.size > 0;
+
+  const showBottomNav = !isAttendDetail && !isSessionDetail && !isCreateFlow && !isScannerOpen && !isRosterSelection;
+  if(bottomNav) bottomNav.style.display = showBottomNav ? 'flex' : 'none';
+
+  const showCreateFab = (currentFlow === 'my-sessions') && !isSessionDetail && !isCreateFlow && !isScannerOpen && !isRosterSelection;
+  if(createFab) createFab.style.display = showCreateFab ? 'flex' : 'none';
+}
+
 function switchMainFlow(flow){
   currentFlow = flow;
   const isMyAttendance = (flow === 'my-attendance');
@@ -1538,11 +1577,9 @@ function switchMainFlow(flow){
 
   const tabAttend = document.getElementById('tabMyAttendance');
   const tabSessions = document.getElementById('tabMySessions');
-  const switcher = document.getElementById('mainFlowSwitcher');
 
   if(tabAttend) tabAttend.classList.toggle('active', isMyAttendance);
   if(tabSessions) tabSessions.classList.toggle('active', isMySessions);
-  if(switcher) switcher.style.display = isCreateSession ? 'none' : 'flex';
 
   document.getElementById('flowMyAttendance').style.display = isMyAttendance ? 'block' : 'none';
   document.getElementById('flowMySessions').style.display = isMySessions ? 'block' : 'none';
@@ -1557,6 +1594,7 @@ function switchMainFlow(flow){
   } else {
     showScreen(current);
   }
+  updateBottomNavAndFabVisibility();
 }
 
 function renderMyAttendanceList(){
@@ -1719,6 +1757,7 @@ function openAttendanceDetail(id){
 
   // Populate Coworkers / Classmates / Attendees List
   renderAttendancePeers(item);
+  updateBottomNavAndFabVisibility();
 }
 
 function closeAttendanceDetail(){
@@ -1729,17 +1768,18 @@ function closeAttendanceDetail(){
   if(listEl) listEl.style.display = 'block';
   const attendBack = document.querySelector('#myAttendanceDetailView .back');
   if(attendBack) attendBack.style.visibility = 'visible';
+  updateBottomNavAndFabVisibility();
 }
 
 /* Scanner Overlay Handlers */
 function openScannerOverlay(){
   document.getElementById('scannerOverlay').style.display = 'block';
-  document.getElementById('scanFabBtn').style.display = 'none';
+  updateBottomNavAndFabVisibility();
 }
 
 function closeScannerOverlay(){
   document.getElementById('scannerOverlay').style.display = 'none';
-  document.getElementById('scanFabBtn').style.display = 'flex';
+  updateBottomNavAndFabVisibility();
 }
 
 function simulateScanSuccess(){
@@ -1818,7 +1858,6 @@ function renderMySessionsList(){
     html += `
       <div style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:6px 0 8px; display:flex; justify-content:space-between; align-items:center;">
         <span>Ongoing Sessions (${ongoingList.length})</span>
-        <button class="btn-primary" style="margin:0; width:auto; padding:4px 10px; font-size:11px; border-radius:14px; text-transform:none; letter-spacing:normal; cursor:pointer; font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.15);" onclick="openCreateSessionFlow()">+ New Session</button>
       </div>
     `;
     if(ongoingList.length === 0){
@@ -1830,13 +1869,9 @@ function renderMySessionsList(){
 
   // If filter is all or past
   if(sessionFilter === 'all' || sessionFilter === 'past'){
-    const showNewBtnOnPast = (sessionFilter === 'past');
     html += `
       <div style="font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:${sessionFilter === 'all' ? '18px' : '6px'} 0 8px; display:flex; justify-content:space-between; align-items:center;">
         <span>Past Sessions (${pastList.length})</span>
-        ${showNewBtnOnPast ? `
-          <button class="btn-primary" style="margin:0; width:auto; padding:4px 10px; font-size:11px; border-radius:14px; text-transform:none; letter-spacing:normal; cursor:pointer; font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.15);" onclick="openCreateSessionFlow()">+ New Session</button>
-        ` : ''}
       </div>
     `;
     if(pastList.length === 0){
@@ -1923,6 +1958,7 @@ function openSessionDetail(id){
 
   // Default to QR subtab
   switchDetailSubtab('qr');
+  updateBottomNavAndFabVisibility();
 }
 
 function closeSessionDetail(){
@@ -1934,6 +1970,7 @@ function closeSessionDetail(){
   if(listEl) listEl.style.display = 'block';
   const sessionBack = document.querySelector('#mySessionDetailView .back');
   if(sessionBack) sessionBack.style.visibility = 'visible';
+  updateBottomNavAndFabVisibility();
 }
 
 function switchDetailSubtab(tabName){
@@ -2037,19 +2074,12 @@ function resetRosterSelectMode(){
 
 function updateRosterActionBar(){
   const bar = document.getElementById('rosterSelectionActionBar');
-  const fab = document.getElementById('scanFabBtn');
   const count = rosterSelectedIds.size;
   
   if(bar){
     bar.style.display = (rosterSelectionMode && count > 0) ? 'block' : 'none';
   }
-  if(fab){
-    const scannerEl = document.getElementById('scannerOverlay');
-    const scannerOpen = scannerEl && scannerEl.style.display === 'block';
-    if(!scannerOpen){
-      fab.style.display = (rosterSelectionMode && count > 0) ? 'none' : 'flex';
-    }
-  }
+  updateBottomNavAndFabVisibility();
   
   const bulkApproveCount = document.getElementById('bulkApproveCount');
   const bulkRejectCount = document.getElementById('bulkRejectCount');
